@@ -32,7 +32,7 @@ test('loaders receive resolved routes and preserve their data type', () => {
 test('declared context types the loader and attached route helpers', () => {
   const settings = createRoute({ name: 'settings', path: '/settings' })
   const login = createRoute({ name: 'login', path: '/login' })
-  const denied = createRejection({ type: 'Denied' })
+  const denied = createRejection({ name: 'Denied' })
   const loader = createLoader({
     context: [login, denied],
     load: (_route, { push, reject }) => {

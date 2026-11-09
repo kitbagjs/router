@@ -375,7 +375,7 @@ describe('addView', () => {
         },
       })
 
-      const rejection = createRejection({ type: 'NotAuthorized', status: 404 })
+      const rejection = createRejection({ name: 'NotAuthorized', status: 404 })
 
       createRoute({ name: 'route', context: [rejection] }).addView(component, {
         props: (__, context) => {

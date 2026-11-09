@@ -47,7 +47,7 @@ test('optional props can be omitted and declared context types both callbacks an
   const empty = createView({ component })
   expectTypeOf(empty).toExtend<View<undefined>>()
   const login = createRoute({ name: 'login', path: '/login' })
-  const denied = createRejection({ type: 'Denied' })
+  const denied = createRejection({ name: 'Denied' })
   const view = createView({
     component,
     context: [login, denied],

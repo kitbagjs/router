@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { assert, expect, test } from 'vitest'
 import { toRaw } from 'vue'
 import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
@@ -14,6 +14,7 @@ test('route.loaders exposes inline, reusable, and inherited definitions', async 
   const router = createRouter([child], { initialUrl: '/parent/child' })
   await router.start()
 
+  assert(router.route.kind === 'route')
   expect(isLoader(router.route.loaders.default)).toBe(true)
   expect(toRaw(router.route.loaders.default)).toBe(parent.matches[0].loaders.default)
   expect(toRaw(router.route.loaders.user)).toBe(child.matches[1].loaders.user)

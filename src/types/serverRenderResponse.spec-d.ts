@@ -5,7 +5,7 @@ import { createRejection } from '@/services/createRejection'
 import { component } from '@/utilities/testHelpers'
 
 test('a reject carries the rejection as a plain string, the status is what a server acts on', async () => {
-  const unauthorized = createRejection({ type: 'Unauthorized', status: 401 })
+  const unauthorized = createRejection({ name: 'Unauthorized', status: 401 })
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
   const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [unauthorized] })
 

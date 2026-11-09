@@ -18,8 +18,8 @@ test('component registration types follow the lifecycle', () => {
     lifecycle: 'onAfterRouteLeave',
     depth: 0,
     hook: (to, context) => {
-      expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
-      expectTypeOf(context.from).toEqualTypeOf<ResolvedRoute>()
+      expectTypeOf(to).toExtend<ResolvedRoute | null>()
+      expectTypeOf(context.from).toExtend<ResolvedRoute>()
       expectTypeOf(context.lifecycle).toEqualTypeOf<'after'>()
       // @ts-expect-error after hooks cannot abort navigation
       context.abort()

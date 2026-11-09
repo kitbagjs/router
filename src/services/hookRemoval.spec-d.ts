@@ -38,7 +38,7 @@ test('remove is available in inline and reusable hook contexts', () => {
   router.onRejection((_rejection, { remove }) => {
     expectTypeOf(remove).toEqualTypeOf<() => void>()
   })
-  createRejection({ type: 'Denied' }).onRejection((_rejection, { remove }) => {
+  createRejection({ name: 'Denied' }).onRejection((_rejection, { remove }) => {
     expectTypeOf(remove).toEqualTypeOf<() => void>()
   })
 })

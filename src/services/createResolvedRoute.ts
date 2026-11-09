@@ -1,3 +1,5 @@
+import { createResolvedHooks } from '@/services/createResolvedHooks'
+import { getMatchedLoaders } from '@/services/getMatchedLoaders'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createCanonicalUrl } from '@/services/createCanonicalUrl'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
@@ -70,7 +72,7 @@ function getResolvedUrls(route: Route, params: Record<string, unknown>, options:
   return { canonical, href, query, hash }
 }
 
-export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: CreateResolvedRouteOptions = {}): ResolvedRoute {
+export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: CreateResolvedRouteOptions = {}): ResolvedRoute & ResolvedRouteInternal {
   if (!isUrl(route)) {
     throw new Error('createResolvedRoute called with an invalid URL')
   }
@@ -93,13 +95,17 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   const internal = {
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
     schema: route.schema,
-    hooks: getHooks(route),
     getRouteTitle,
   } satisfies ResolvedRouteInternal
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
     kind: 'route',
     ...internal,
+    kind: 'route',
+    loaders: Object.fromEntries(getMatchedLoaders(route.matches).map(({ loader, location }) => [location.name, loader])),
+    get hooks() {
+      return createResolvedHooks(getHooks(route))
+    },
     ...createParamGetters({ schema: route.schema, params }),
     id: route.id,
     name: route.name,

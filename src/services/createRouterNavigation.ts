@@ -13,7 +13,6 @@ export type RouterNavigation = HasVueAppStore & {
   active: Readonly<Ref<Navigation | null>>,
   run: (options: RunNavigationOptions) => Promise<void>,
   createStore: () => ComputationStore,
-  cancel: () => AbortSignal,
   stop: () => void,
 }
 
@@ -80,15 +79,6 @@ export function createRouterNavigation(): RouterNavigation {
     }
   }
 
-  function cancel(): AbortSignal {
-    controller?.abort()
-    pending?.store.abandon()
-    active.value?.store.abandon()
-    controller = new AbortController()
-
-    return controller.signal
-  }
-
   function stop(): void {
     stopped = true
     controller?.abort()
@@ -100,7 +90,6 @@ export function createRouterNavigation(): RouterNavigation {
     active,
     run,
     createStore,
-    cancel,
     stop,
     setVueApp,
   }

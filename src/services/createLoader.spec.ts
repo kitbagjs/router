@@ -40,7 +40,7 @@ test('attachment preserves loader identity while overriding defaults', () => {
 })
 
 test('loader context registers navigation targets and rejections through chained attachments', async () => {
-  const denied = createRejection({ type: 'Denied' })
+  const denied = createRejection({ name: 'Denied' })
   const rejectLoader = createLoader({ context: [denied], load: (_route, { reject }) => reject('Denied') })
   const target = createRoute({ name: 'target', path: '/target' }).addLoader(rejectLoader)
   const redirectLoader = createLoader({ context: [target], load: (_route, { push }) => push('target') })
@@ -52,7 +52,7 @@ test('loader context registers navigation targets and rejections through chained
 
   await router.start()
   await vi.waitFor(() => expect(onRejection).toHaveBeenCalledWith('Denied', expect.anything()))
-  expect(router.route.name).toBe('target')
+  expect(router.route.name).toBe('Denied')
 })
 
 test('adding a loader preserves context targets available to route callbacks', async () => {

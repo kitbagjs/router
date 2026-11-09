@@ -1,6 +1,6 @@
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
-import { expect, test, vi } from 'vitest'
+import { assert, expect, test, vi } from 'vitest'
 import { Component, defineComponent, h, Suspense } from 'vue'
 import { createLoader, createRejection, createRoute, createRouter, RouterView, useLoader } from '@/main'
 
@@ -48,6 +48,7 @@ test('waits for replacement data after a loader redirects', async () => {
 
   redirect.resolve()
   await flushPromises()
+  assert(router.route.kind === 'route')
   expect(router.route.params.id).toBe('2')
   expect(resumed).not.toHaveBeenCalled()
 
@@ -64,7 +65,7 @@ test('shows the rejection view without resuming setup', async () => {
   const rejected = Promise.withResolvers<void>()
   const continued = vi.fn()
   const error = vi.fn()
-  const rejection = createRejection({ type: 'Forbidden', component: { render: () => h('p', 'forbidden') } })
+  const rejection = createRejection({ name: 'Forbidden', component: { render: () => h('p', 'forbidden') } })
   const loader = createLoader({
     context: [rejection],
     load: async (_route, { reject }) => {
@@ -140,6 +141,7 @@ test('keeps waiting when replacement navigation is aborted', async () => {
   redirect.resolve()
   await flushPromises()
 
+  assert(router.route.kind === 'route')
   expect(router.route.params.id).toBe('1')
   expect(result.loading.value).toBe(true)
   expect(result.data.value).toBeUndefined()

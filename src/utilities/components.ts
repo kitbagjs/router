@@ -27,7 +27,11 @@ export type AsyncComponentFilter = (match: CreatedRouteOptions, view: RouteView<
 /**
  * The async components a route renders, or only those the filter keeps.
  */
-export function getAsyncComponents(route: ResolvedRoute, filter: AsyncComponentFilter = () => true): ComponentWithAsyncLoader[] {
+export function getAsyncComponents(route: ResolvedRoute | null, filter: AsyncComponentFilter = () => true): ComponentWithAsyncLoader[] {
+  if (!route) {
+    return []
+  }
+
   return route.matches.flatMap((match) => Object.values(match.views).flatMap((view) => {
     if (isAsyncComponent(view.component) && filter(match, view)) {
       return [view.component]
@@ -41,6 +45,6 @@ export function getAsyncComponents(route: ResolvedRoute, filter: AsyncComponentF
  * Loads the async components a route renders, or only those the filter keeps, so they are ready to render
  * synchronously. Each load is reported on its own.
  */
-export function loadAsyncComponents(route: ResolvedRoute, filter: AsyncComponentFilter = () => true): Promise<unknown>[] {
+export function loadAsyncComponents(route: ResolvedRoute | null, filter: AsyncComponentFilter = () => true): Promise<unknown>[] {
   return getAsyncComponents(route, filter).map((component) => component.__asyncLoader())
 }

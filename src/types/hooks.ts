@@ -1,12 +1,12 @@
 import { AnyHook } from '@/types/hook'
 import { Hooks } from '@/models/hooks'
-import { isResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
+import { isResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion, ResolvedRejection } from '@/types/resolved'
 import { AnyFunction, MaybePromise } from '@/types/utilities'
 import { isRoute, Route, Routes } from '@/types/route'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { isRejection, Rejection, Rejections } from '@/types/rejection'
+import { isRejection, Rejection, Rejections, DefaultNotFound } from '@/types/rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
 import { RedirectHook } from '@/types/redirects'
@@ -15,12 +15,18 @@ import { RouteUpdate } from '@/types/routeUpdate'
 import { NavigationProgressTracker } from '@/services/createNavigationProgress'
 
 export function getHooks(value: Record<string, unknown> | undefined | null): Hooks[] {
-  return !!value && (isRoute(value) || isResolvedRoute(value) || isRejection(value)) ? value.hooks : []
+  if (isResolvedRoute(value)) {
+    return [value.hooks]
+  }
+
+  return !!value && (isRoute(value) || isRejection(value)) ? value.hooks : []
 }
 
 export function combineHooks(parent: Route, child: Route): Hooks[] {
   return [...getHooks(parent), ...getHooks(child)]
 }
+
+type HookDestination<TRoute extends Route, TRejections extends Rejections, TSource extends Route = TRoute> = ResolvedRouteUnion<TRoute> | (TRejections[number] extends infer TRejection extends Route ? ResolvedRejection<TRejection, TSource> : never) | ResolvedRejection<DefaultNotFound, TSource>
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,
@@ -169,7 +175,7 @@ export type BeforeEnterHookContext<
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
 > = BeforeHookContext<TRouteTo, TRoutes, TRejections> & {
-  from: ResolvedRouteUnion<TRouteFrom> | null,
+  from: HookDestination<TRouteFrom, TRejections, TRoutes[number]> | null,
 }
 
 export type BeforeEnterHook<
@@ -192,7 +198,7 @@ export type BeforeUpdateHookContext<
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
 > = BeforeHookContext<TRouteTo, TRoutes, TRejections> & {
-  from: ResolvedRouteUnion<TRouteFrom> | null,
+  from: HookDestination<TRouteFrom, TRejections, TRoutes[number]> | null,
 }
 
 export type BeforeUpdateHook<
@@ -223,7 +229,7 @@ export type BeforeLeaveHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (to: ResolvedRouteUnion<TRouteTo> | null, context: BeforeLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
+> = (to: HookDestination<TRouteTo, TRejections, TRoutes[number]> | null, context: BeforeLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
 
 export type AddBeforeLeaveHook<
   TRoutes extends Routes = Routes,
@@ -238,7 +244,7 @@ export type AfterEnterHookContext<
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
 > = AfterHookContext<TRouteTo, TRoutes, TRejections> & {
-  from: ResolvedRouteUnion<TRouteFrom> | null,
+  from: HookDestination<TRouteFrom, TRejections, TRoutes[number]> | null,
 }
 
 export type AfterEnterHook<
@@ -261,7 +267,7 @@ export type AfterUpdateHookContext<
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
 > = AfterHookContext<TRouteTo, TRoutes, TRejections> & {
-  from: ResolvedRouteUnion<TRouteFrom> | null,
+  from: HookDestination<TRouteFrom, TRejections, TRoutes[number]> | null,
 }
 
 export type AfterUpdateHook<
@@ -292,7 +298,7 @@ export type AfterLeaveHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (to: ResolvedRouteUnion<TRouteTo> | null, context: AfterLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
+> = (to: HookDestination<TRouteTo, TRejections, TRoutes[number]> | null, context: AfterLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
 
 export type AddAfterLeaveHook<
   TRoutes extends Routes = Routes,
@@ -304,13 +310,19 @@ export type AddAfterLeaveHook<
 export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextRedirect | CallbackContextReject | CallbackContextAbort
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
+export const BEFORE_LEAVE_HOOKS = Symbol('BEFORE_LEAVE_HOOKS')
+
+export type BeforeLeaveHookState = {
+  [BEFORE_LEAVE_HOOKS]?: Set<HookRemove>,
+}
+
 export type HookRunnerContext<TRoutes extends Routes = Routes> = {
   to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
   signal: AbortSignal,
 }
 
-export type BeforeHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes> & { progress?: NavigationProgressTracker }) => Promise<BeforeHookResponse>
+export type BeforeHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes> & { progress?: NavigationProgressTracker, leaveHooks?: Set<HookRemove> }) => Promise<BeforeHookResponse>
 
 export type AfterHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes>) => Promise<AfterHookResponse>
 
@@ -350,8 +362,8 @@ export type ErrorHookContext<
   TRejections extends Rejections = Rejections
 > = {
   remove: HookRemove,
-  to: RouterResolvedRouteUnion<TRoutes> | null,
-  from: RouterResolvedRouteUnion<TRoutes> | null,
+  to: HookDestination<TRoutes[number], TRejections> | null,
+  from: HookDestination<TRoutes[number], TRejections> | null,
   source: ErrorHookSource,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,

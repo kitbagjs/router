@@ -3,6 +3,7 @@ import { createRouteId } from '@/services/createRouteId'
 import { CreateRouteOptions, ToRouteMatches, ToRouteUrl, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
+import { InternalRouteHooks } from '@/types/hooks'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
@@ -15,6 +16,12 @@ export function createRoute<
 >(options: TOptions): RouteWithMethods<ToRouteUrl<TOptions>, ToRouteMatches<TOptions>>
 
 export function createRoute(options: CreateRouteOptions): Route {
+  const { route, hooks } = createRouteDefinition(options)
+
+  return withRouteMethods(route, hooks)
+}
+
+export function createRouteDefinition(options: CreateRouteOptions): { route: Route & RouteInternal, hooks: InternalRouteHooks } {
   const id = createRouteId()
   const name = toName(options.name)
   const path = toUrlPart(options.path)
@@ -59,8 +66,8 @@ export function createRoute(options: CreateRouteOptions): Route {
   if (isWithParent(options)) {
     const combined = combineRoutes(options.parent, route, options.hoist)
 
-    return withRouteMethods(combined, hooks)
+    return { route: combined, hooks }
   }
 
-  return withRouteMethods(route, hooks)
+  return { route, hooks }
 }

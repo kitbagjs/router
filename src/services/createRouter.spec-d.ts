@@ -136,7 +136,7 @@ describe('rejections', () => {
 
   test('custom rejections are valid', () => {
     const myCustomRejection = createRejection({
-      type: 'MyCustomRejection',
+      name: 'MyCustomRejection',
 
       status: 404,
       component,
@@ -154,7 +154,7 @@ describe('rejections', () => {
 
   test('custom rejections from plugins are valid', () => {
     const myPluginRejection = createRejection({
-      type: 'MyPluginRejection',
+      name: 'MyPluginRejection',
 
       status: 404,
       component,
@@ -181,7 +181,7 @@ describe('options.rejections in hooks', () => {
       .addView(component)
 
     const customRejection = createRejection({
-      type: 'CustomRejection',
+      name: 'CustomRejection',
 
       status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
@@ -210,7 +210,7 @@ describe('options.rejections in hooks', () => {
       .addView(component)
 
     const customRejection = createRejection({
-      type: 'CustomRejection',
+      name: 'CustomRejection',
 
       status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
@@ -233,7 +233,7 @@ describe('options.rejections in hooks', () => {
 })
 
 describe('route', () => {
-  test('route is never if there are no named routes', () => {
+  test('route is NotFound if there are no named routes', () => {
     const route = createRoute({})
       .addView(component)
 
@@ -241,7 +241,7 @@ describe('route', () => {
 
     const router = createRouter([route])
 
-    expectTypeOf(router.route).toEqualTypeOf<never>()
+    expectTypeOf(router.route.name).toEqualTypeOf<'NotFound'>()
   })
 
   test('route union does not include routes without a name', () => {
@@ -267,7 +267,7 @@ describe('route', () => {
 
     const router = createRouter([routeA, routeB, routeC, routeD])
 
-    expectTypeOf(router.route).toEqualTypeOf<RouterRouteUnion<[typeof routeC, typeof routeD]>>()
+    expectTypeOf<Extract<typeof router.route, { kind: 'route' }>>().toEqualTypeOf<RouterRouteUnion<[typeof routeC, typeof routeD]>>()
   })
 })
 

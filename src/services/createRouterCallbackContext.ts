@@ -57,6 +57,10 @@ export function createRouterCallbackContext({ to }: { to: ResolvedRoute | null }
       throw new UpdateWithoutRouteError()
     }
 
+    if (to.kind === 'rejection') {
+      return push(to.href, typeof nameOrParams === 'object' ? valueOrOptions : maybeOptions)
+    }
+
     if (typeof nameOrParams === 'object') {
       const params = {
         ...to.params,

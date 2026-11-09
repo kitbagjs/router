@@ -1,4 +1,4 @@
-import { expectTypeOf, test } from 'vitest'
+import { assert, expectTypeOf, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRouter } from '@/services/createRouter'
@@ -17,7 +17,9 @@ test('redirect chains retain the receiving route and parameter inference', () =>
   const legacy = createRoute({ path: '/legacy/[id]' })
 
   expectTypeOf(route.redirectFrom(legacy, ({ id }) => ({ id }))).toEqualTypeOf(route)
-  expectTypeOf(createRouter([route]).route.loaders.default.load).returns.toEqualTypeOf<number>()
+  const router = createRouter([route])
+  assert(router.route.kind === 'route')
+  expectTypeOf(router.route.loaders.default.load).returns.toEqualTypeOf<number>()
   // @ts-expect-error target requires id
   route.redirectTo(target)
   // @ts-expect-error target id must be a string

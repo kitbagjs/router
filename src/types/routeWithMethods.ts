@@ -6,6 +6,8 @@ import { RouteHooks, ExternalRouteHooks } from '@/types/routeHooks'
 import { RouteRedirects, ExternalRouteRedirects } from '@/types/routeRedirects'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteTitle } from '@/types/routeTitle'
+import { RejectionIdentity } from '@/types/rejection'
+import { RejectionHooks } from '@/types/hooks'
 import { Url } from '@/types/url'
 
 /**
@@ -20,12 +22,10 @@ export type RouteWithMethods<
   TUrl extends Url = Url,
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
 > = Route<TUrl, TMatches>
-  & RouteAddView<TUrl, TMatches>
-  & RouteAddLoader<TUrl, TMatches>
-  & RouteAddAlias<TUrl, TMatches>
-  & RouteHooks<TUrl, TMatches>
-  & RouteRedirects<TUrl, TMatches>
   & RouteTitle<TUrl, TMatches>
+  & (Route<TUrl, TMatches>['kind'] extends 'rejection'
+    ? { status?: number } & RejectionIdentity<Route<TUrl, TMatches>['name']> & RejectionHooks<Route<TUrl, TMatches>['name']>
+    : RouteAddView<TUrl, TMatches> & RouteAddLoader<TUrl, TMatches> & RouteAddAlias<TUrl, TMatches> & RouteHooks<TUrl, TMatches> & RouteRedirects<TUrl, TMatches>)
 
 export type ExternalRouteWithMethods<
   TRoute extends Route = Route,

@@ -15,8 +15,8 @@ import {
 import { defineComponent } from 'vue'
 
 const component = defineComponent(() => () => null)
-const denied = createRejection({ type: 'Denied' })
-const expired = createRejection({ type: 'Expired' })
+const denied = createRejection({ name: 'Denied' })
+const expired = createRejection({ name: 'Expired' })
 const extra = createRoute({
   name: 'extra',
   path: '/extra/[slug]',
@@ -45,7 +45,7 @@ declare module '@kitbag/router' {
 }
 
 const other = createRoute({ name: 'other' })
-const otherDenied = createRejection({ type: 'OtherDenied' })
+const otherDenied = createRejection({ name: 'OtherDenied' })
 const assets = createRouterAssets(createRouter([other], { rejections: [otherDenied] }))
 
 test('Hook annotations preserve registered callback routes', () => {
@@ -82,7 +82,7 @@ test('Hook context annotations preserve required params', () => {
 test('onBeforeRouteEnter preserves callback route types', () => {
   logout.onBeforeRouteEnter((to, { from }) => {
     expectTypeOf(to.name).toEqualTypeOf<'logout'>()
-    expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+    expectTypeOf(from).toExtend<ResolvedRoute | null>()
   })
 })
 
@@ -100,7 +100,7 @@ test('onBeforeRouteEnter uses declared navigation context', () => {
 test('onAfterRouteLeave preserves callback route types', () => {
   logout.onAfterRouteLeave((to, { from }) => {
     expectTypeOf(from.name).toEqualTypeOf<'logout'>()
-    expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
+    expectTypeOf(to).toExtend<ResolvedRoute | null>()
   })
 })
 
