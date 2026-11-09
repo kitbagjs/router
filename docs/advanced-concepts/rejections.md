@@ -106,6 +106,17 @@ const rejection = useRejection()
 const rejectionName = computed(() => rejection.value?.name)
 ```
 
+## Loaders
+
+Add [loaders](/core-concepts/loaders) to fetch data for a rejection. They run when the rejection is selected, and its component can read their results with `useLoader`. The rejection does not inherit the requested route's loader results.
+
+```ts
+import { sessionLoader } from '@/loaders/session'
+
+const authNeededRejection = createRejection({...})
+  .addLoader(sessionLoader)
+```
+
 ## Title
 
 The `setTitle` callback is used to set the document title for the rejection. The callback is given the resolved route and a context object. The callback can be async, and should return a string that should be set as the document.title.

@@ -1,8 +1,12 @@
 /* eslint-disable vue/one-component-per-file */
-import { defineComponent, h } from 'vue'
+import { Component, createSSRApp, defineComponent, h, onBeforeUnmount } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import { flushPromises, mount } from '@vue/test-utils'
 import { assert, expect, onTestFinished, test, vi } from 'vitest'
-import { createRejection, createRoute, createRouter, createRouterAssets, RouterView, useRoute } from '@/main'
+import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, RouterView, useLoader, useRoute } from '@/main'
+import { warnLoaderFallback } from '@/services/warnLoaderFallback'
+
+vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
 
 test('a rejection owns the destination and preserves the attempted route only as source', async () => {
   const leave = vi.fn()
@@ -90,6 +94,64 @@ test('a rejection cancelled by a leave guard does not change the URL or current 
   expect(router.route.name).toBe('home')
 })
 
+test('the rejection runs its own loaders without inheriting the attempted route computations', async () => {
+  const originalLoad = vi.fn()
+  const originalTitle = vi.fn(() => 'Original')
+  const load = vi.fn(() => 'Rejection data')
+  const loader = createLoader({ load })
+  const denied = createRejection({
+    name: 'Denied',
+    component: defineComponent({
+      setup() {
+        const { data } = useLoader(loader)
+        return () => h('p', data.value)
+      },
+    }),
+  })
+    .addLoader(loader)
+  const home = createRoute({ name: 'home', path: '/', context: [denied] })
+    .addLoader(originalLoad)
+    .setTitle(originalTitle)
+    .onBeforeRouteEnter((_to, { reject }) => reject('Denied'))
+  const router = createRouter([home], { initialUrl: '/' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+  await router.start()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Rejection data')
+  expect(load).toHaveBeenCalledOnce()
+  expect(originalLoad).not.toHaveBeenCalled()
+  expect(originalTitle).not.toHaveBeenCalled()
+  await expect(router.route.getTitle()).resolves.toBeUndefined()
+  expect(warnLoaderFallback).not.toHaveBeenCalled()
+})
+
+test('a persistent consumer outside RouterView follows ordinary and rejection navigation', async () => {
+  const load = vi.fn((route) => route.name)
+  const loader = createLoader({ load })
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(loader)
+  const denied = createRejection({ name: 'Denied' }).addLoader(loader)
+  const router = createRouter([home], { initialUrl: '/', rejections: [denied] })
+  const wrapper = mount(defineComponent({
+    setup() {
+      const { data } = useLoader(loader)
+      return () => h('header', data.value)
+    },
+  }), { global: { plugins: [router] } })
+  await router.start()
+  await flushPromises()
+  expect(wrapper.text()).toBe('home')
+
+  await router.reject('Denied')
+  await flushPromises()
+  expect(wrapper.text()).toBe('Denied')
+  await router.push('/')
+  await flushPromises()
+  expect(wrapper.text()).toBe('home')
+  expect(load).toHaveBeenCalledTimes(3)
+  expect(warnLoaderFallback).not.toHaveBeenCalled()
+})
+
 test('replacing a rejection preserves the original source and unmatched URLs have no source', async () => {
   const denied = createRejection({ name: 'Denied' })
   const locked = createRejection({ name: 'Locked' })
@@ -153,6 +215,67 @@ test('named useRoute reads the rejection and synchronous initial resolution does
     },
   }), { global: { plugins: [router] } })
   expect(wrapper.text()).toBe('Denied')
+})
+
+test('SSR hydrates the selected rejection and its own loader values without running original computations', async () => {
+  document.body.innerHTML = ''
+  onTestFinished(() => {
+    document.body.innerHTML = ''
+  })
+  const originalLoad = vi.fn()
+  const serverLoad = vi.fn(() => 'Server data')
+  const clientLoad = vi.fn(() => 'Client data')
+  const serverLoader = createLoader({ load: serverLoad })
+  const clientLoader = createLoader({ load: clientLoad })
+  function view(loader: typeof serverLoader): Component {
+    return defineComponent({
+      async setup() {
+        const { data } = await useLoader(loader)
+        return () => h('p', data.value)
+      },
+    })
+  }
+  const denied = createRejection({
+    name: 'Denied',
+    status: 403,
+    component: view(serverLoader),
+  })
+    .addLoader(serverLoader)
+  const home = createRoute({ name: 'home', path: '/', context: [denied] })
+    .addLoader(originalLoad)
+    .onBeforeRouteEnter((_to, { reject }) => reject('Denied'))
+  const server = createRouter([home], { initialUrl: '/', ssr: true })
+  const app = createSSRApp(RouterView)
+  app.use(server)
+  onTestFinished(server.stop)
+  expect(await renderToString(app)).toContain('Server data')
+  const response = await server.render()
+  assert(response.kind === 'reject')
+  expect(response.status).toBe(403)
+  document.body.innerHTML = response.payload
+
+  const clientDenied = createRejection({
+    name: 'Denied',
+    status: 403,
+    component: view(clientLoader),
+  })
+    .addLoader(clientLoader)
+  const clientHome = createRoute({ name: 'home', path: '/' }).addLoader(originalLoad)
+  const client = createRouter([clientHome], { initialUrl: '/', rejections: [clientDenied] })
+  const before = vi.fn()
+  client.onBeforeRouteEnter(before)
+  const wrapper = mount({ template: '<Suspense><RouterView /></Suspense>' }, { global: { plugins: [client] } })
+  await client.start()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Server data')
+  expect(client.route.name).toBe('Denied')
+  assert(client.route.kind === 'rejection')
+  expect(client.route.source?.name).toBe('home')
+  expect(serverLoad).toHaveBeenCalledOnce()
+  expect(clientLoad).not.toHaveBeenCalled()
+  expect(originalLoad).not.toHaveBeenCalled()
+  expect(before).not.toHaveBeenCalled()
 })
 
 test.each(['progressive', 'blocking'] as const)('a %s loader rejection keeps one history entry at the attempted URL', async (navigation) => {
@@ -307,4 +430,38 @@ test('rejection before-enter hooks are awaited and can select another rejection'
   expect(router.route.name).toBe('Locked')
   assert(router.route.kind === 'rejection')
   expect(router.route.source?.name).toBe('home')
+})
+
+test('departing views retain their props and loader data when a rejection replaces the route', async () => {
+  const beforeUnmount = vi.fn()
+  const load = vi.fn((route) => route.name)
+  const loader = createLoader({ load })
+  const home = createRoute({ name: 'home', path: '/' })
+    .addLoader(loader)
+    .addView(defineComponent({
+      props: { label: { type: String, required: true } },
+      setup(props) {
+        const { data } = useLoader(loader)
+        onBeforeUnmount(() => beforeUnmount(props.label, data.value))
+        return () => h('p', `${props.label}:${data.value}`)
+      },
+    }), { props: () => ({ label: 'Home props' }) })
+  const denied = createRejection({
+    name: 'Denied',
+    component: { template: '<p>Denied</p>' },
+  })
+    .addLoader(loader)
+  const router = createRouter([home], { initialUrl: '/', rejections: [denied] })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+  await router.start()
+  await flushPromises()
+  expect(wrapper.text()).toBe('Home props:home')
+
+  await router.reject('Denied')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Denied')
+  expect(beforeUnmount).toHaveBeenCalledExactlyOnceWith('Home props', 'home')
+  expect(load).toHaveBeenCalledTimes(2)
+  expect(warnLoaderFallback).not.toHaveBeenCalled()
 })
