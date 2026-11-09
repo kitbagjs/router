@@ -30,6 +30,7 @@ export function createRejection(options: RejectionOptions): Rejection {
   } satisfies RejectionInternal
 
   const rejection = {
+    kind: 'rejection',
     name,
     type: name,
     status,

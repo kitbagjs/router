@@ -2216,3 +2216,15 @@ test('prefetched navigation actions win in completion order', async () => {
   await vi.waitFor(() => expect(router.route.href).toBe('/second'))
   router.stop()
 })
+
+test('route kind is preserved through resolution and current route updates', async () => {
+  const home = createRoute({ name: 'home', path: '/' })
+  const next = createRoute({ name: 'next', path: '/next' })
+  const router = createRouter([home, next], { initialUrl: '/' })
+  expect(home.kind).toBe('route')
+  expect(router.resolve('next').kind).toBe('route')
+  await router.start()
+  await router.push('next')
+  expect(router.route.kind).toBe('route')
+  router.stop()
+})

@@ -43,6 +43,7 @@ export function createRoute(options: CreateRouteOptions): Route {
   } satisfies RouteInternal
 
   const route = {
+    kind: 'route',
     id,
     matches: [rawRoute],
     name,
