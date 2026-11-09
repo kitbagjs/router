@@ -101,7 +101,6 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
     kind: 'route',
     ...internal,
-    kind: 'route',
     loaders: Object.fromEntries(getMatchedLoaders(route.matches).map(({ loader, location }) => [location.name, loader])),
     get hooks() {
       return createResolvedHooks(getHooks(route))

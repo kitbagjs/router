@@ -15,8 +15,8 @@ import {
 import { defineComponent } from 'vue'
 
 const component = defineComponent(() => () => null)
-const denied = createRejection({ name: 'Denied' })
-const expired = createRejection({ name: 'Expired' })
+const denied = createRejection({ type: 'Denied' })
+const expired = createRejection({ type: 'Expired' })
 const extra = createRoute({
   name: 'extra',
   path: '/extra/[slug]',
@@ -45,7 +45,7 @@ declare module '@kitbag/router' {
 }
 
 const other = createRoute({ name: 'other' })
-const otherDenied = createRejection({ name: 'OtherDenied' })
+const otherDenied = createRejection({ type: 'OtherDenied' })
 const assets = createRouterAssets(createRouter([other], { rejections: [otherDenied] }))
 
 test('Hook annotations preserve registered callback routes', () => {

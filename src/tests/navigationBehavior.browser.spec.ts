@@ -31,7 +31,7 @@ function mountRouter(router: ReturnType<typeof createRouter>): ReturnType<typeof
 describe('route commitment', () => {
   test('blocking navigation to an unmatched URL renders NotFound', async () => {
     const home = createRoute({ name: 'home', path: '/' }).addView({ template: '<div>Home</div>' })
-    const notFound = createRejection({ name: 'NotFound', component: { template: '<div>Not found</div>' } })
+    const notFound = createRejection({ type: 'NotFound', component: { template: '<div>Not found</div>' } })
     const router = createRouter([home], {
       initialUrl: '/',
       historyMode: 'memory',

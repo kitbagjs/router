@@ -186,7 +186,7 @@ test('error hooks can remove themselves', () => {
 })
 
 test('global and rejection hooks can remove themselves independently', () => {
-  const rejection = createRejection({ name: 'Denied' })
+  const rejection = createRejection({ type: 'Denied' })
   const runner = createRouterHooks({ redirectStatus: 302 })
   const callback = vi.fn((_type, { remove }: { remove: HookRemove }) => {
     remove()

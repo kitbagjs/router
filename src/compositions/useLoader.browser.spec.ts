@@ -372,7 +372,7 @@ describe('fallback loaders', () => {
   })
 
   test('rejects navigation with rejections declared by the loader', async () => {
-    const denied = createRejection({ name: 'Denied' })
+    const denied = createRejection({ type: 'Denied' })
     const loader = createLoader({
       context: [denied],
       load: (route, { reject }) => {

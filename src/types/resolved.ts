@@ -152,8 +152,8 @@ export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
  * type RouteUnion = RouteA | RouteB
  * type ResolvedUnion = ResolvedRouteUnion<RouteUnion> // ResolvedRoute<RouteA> | ResolvedRoute<RouteB>
  */
-export type ResolvedRouteUnion<TRoute extends Route> = TRoute extends Route
-  ? ResolvedRoute<TRoute>
+export type ResolvedRouteUnion<TRoute extends Route, TSource extends Route = Route> = TRoute extends Route
+  ? ResolvedRoute<TRoute, TSource>
   : never
 
 /**

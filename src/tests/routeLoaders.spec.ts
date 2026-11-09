@@ -50,7 +50,7 @@ describe('loader context', () => {
         await ready.promise
         reject('NotFound')
       })
-    const denied = createRejection({ name: 'Denied' })
+    const denied = createRejection({ type: 'Denied' })
     const router = createRouter([route], { initialUrl: '/', historyMode: 'memory', rejections: [denied] })
     const onRejection = vi.fn()
     router.onRejection(onRejection)

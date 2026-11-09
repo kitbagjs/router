@@ -197,7 +197,7 @@ test('Renders the genericRejection component when the initialUrl does not match'
 test('Renders custom genericRejection component when the initialUrl does not match', async () => {
   const NotFound = { template: 'Custom Not Found' }
   const notFoundRejection = createRejection({
-    name: 'NotFound',
+    type: 'NotFound',
 
     status: 404,
     component: NotFound,
@@ -619,7 +619,7 @@ test('prefetched async props trigger push when navigation is initiated', async (
 
 test('Renders correct component when using default slot', async () => {
   const myRejection = createRejection({
-    name: 'myRejection',
+    type: 'myRejection',
 
     status: 404,
     component: {
@@ -682,7 +682,7 @@ test('Renders correct component when using default slot', async () => {
 test('Renders the rejection component when the rejection is not registered on the router', async () => {
   const rejectionText = 'Rejection content to render'
   const myRejection = createRejection({
-    name: 'myRejection',
+    type: 'myRejection',
 
     status: 404,
     component: {

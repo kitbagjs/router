@@ -93,7 +93,7 @@ describe('options.rejections', () => {
       .addView(component)
 
     const customRejection = createRejection({
-      name: 'CustomRejection',
+      type: 'CustomRejection',
 
       status: 404,
       component: { template: '<div>This is a custom rejection</div>' },

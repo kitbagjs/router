@@ -170,7 +170,7 @@ test('route without title and parent with title updates document title', async (
 })
 
 test('rejection from a hook updates document title', async () => {
-  const locked = createRejection({ name: 'Locked', status: 423, component })
+  const locked = createRejection({ type: 'Locked', status: 423, component })
 
   const callback = vi.fn(() => 'locked')
   locked.setTitle(callback)
@@ -255,7 +255,7 @@ test('rejection without a title in an after hook does not fall back to the sourc
 })
 
 test('rejection with a title wins over the current route title', async () => {
-  const locked = createRejection({ name: 'Locked', status: 423, component })
+  const locked = createRejection({ type: 'Locked', status: 423, component })
 
   locked.setTitle(() => 'locked')
 

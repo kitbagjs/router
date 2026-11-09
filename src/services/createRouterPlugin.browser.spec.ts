@@ -29,7 +29,7 @@ test('given a plugin, adds the routes to the router', async () => {
 
 test('given a plugin, adds the rejections to the router', async () => {
   const pluginRejection = createRejection({
-    name: 'from-plugin',
+    type: 'from-plugin',
 
     status: 404,
     component: { template: '<div>This is a plugin rejection</div>' },

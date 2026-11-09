@@ -461,7 +461,7 @@ describe('hooks', () => {
 })
 
 test('given parent, context is combined', () => {
-  const parentRejection = createRejection({ name: 'aRejection', status: 404 })
+  const parentRejection = createRejection({ type: 'aRejection', status: 404 })
   const childRelated = createRoute({ name: 'bRoute' })
 
   const parent = createRoute({

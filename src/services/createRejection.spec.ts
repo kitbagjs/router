@@ -6,13 +6,13 @@ import { getRoutesForRouter } from '@/services/getRoutesForRouter'
 import { component } from '@/utilities/testHelpers'
 
 test('given a status, stores it on the rejection', () => {
-  const rejection = createRejection({ name: 'Unauthorized', status: 401 })
+  const rejection = createRejection({ type: 'Unauthorized', status: 401 })
 
   expect(rejection.status).toBe(401)
 })
 
 test('stores whatever status was given', () => {
-  const rejection = createRejection({ name: 'Maintenance', status: 503 })
+  const rejection = createRejection({ type: 'Maintenance', status: 503 })
 
   expect(rejection.status).toBe(503)
 })

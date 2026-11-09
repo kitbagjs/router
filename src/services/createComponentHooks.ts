@@ -3,20 +3,21 @@ import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { createUseRouterHooks } from '@/compositions/useRouterHooks'
 import { AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterUpdateHook, AddAfterLeaveHook, ComponentHookRegistrationOptions, HookRemove } from '@/types/hooks'
 import { Routes } from '@/types/route'
-import { Router, RouterRejections, RouterRoutes } from '@/types/router'
+import { Router, RouterRejections, RouterRoutes, RouterHookRoutes } from '@/types/router'
 import { Rejections } from '@/types/rejection'
 
 type ComponentHooks<
   TRoutes extends Routes,
-  TRejections extends Rejections
+  TRejections extends Rejections,
+  TDestinations extends Routes = TRoutes
 > = {
-  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes, TRejections>,
-  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes, TRejections>,
-  onAfterRouteLeave: AddAfterLeaveHook<TRoutes, TRejections>,
-  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes, TRejections>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes, TRejections, TDestinations[number], TDestinations[number]>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes, TRejections, TDestinations[number], TDestinations[number]>,
+  onAfterRouteLeave: AddAfterLeaveHook<TRoutes, TRejections, TDestinations[number], TDestinations[number]>,
+  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes, TRejections, TDestinations[number], TDestinations[number]>,
 }
 
-export function createComponentHooks<TRouter extends Router>(routerKey: InjectionKey<TRouter>): ComponentHooks<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+export function createComponentHooks<TRouter extends Router>(routerKey: InjectionKey<TRouter>): ComponentHooks<RouterRoutes<TRouter>, RouterRejections<TRouter>, RouterHookRoutes<TRouter>>
 export function createComponentHooks(routerKey: symbol): ComponentHooks<Routes, Rejections> {
   const useRouterDepth = createUseRouterDepth(routerKey)
   const useRouterHooks = createUseRouterHooks(routerKey)

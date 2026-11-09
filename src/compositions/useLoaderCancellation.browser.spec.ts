@@ -65,7 +65,7 @@ test('shows the rejection view without resuming setup', async () => {
   const rejected = Promise.withResolvers<void>()
   const continued = vi.fn()
   const error = vi.fn()
-  const rejection = createRejection({ name: 'Forbidden', component: { render: () => h('p', 'forbidden') } })
+  const rejection = createRejection({ type: 'Forbidden', component: { render: () => h('p', 'forbidden') } })
   const loader = createLoader({
     context: [rejection],
     load: async (_route, { reject }) => {

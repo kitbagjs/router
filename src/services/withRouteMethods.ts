@@ -134,6 +134,12 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
       ...route,
       setTitle,
       onRejection,
+      onBeforeRouteEnter,
+      onBeforeRouteUpdate,
+      onBeforeRouteLeave,
+      onAfterRouteEnter,
+      onAfterRouteUpdate,
+      onAfterRouteLeave,
     }
 
     return result

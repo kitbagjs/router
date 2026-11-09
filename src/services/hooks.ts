@@ -4,10 +4,6 @@ import { ResolvedRoute } from '@/types/resolved'
 type RouteHookCondition = (to: ResolvedRoute | null, from: ResolvedRoute | null, depth: number) => boolean
 
 export const isRouteEnter: RouteHookCondition = (to, from, depth) => {
-  if (to?.kind === 'rejection') {
-    return false
-  }
-
   const toMatches = to?.matches ?? []
   const fromMatches = from?.matches ?? []
 
@@ -15,10 +11,6 @@ export const isRouteEnter: RouteHookCondition = (to, from, depth) => {
 }
 
 export const isRouteLeave: RouteHookCondition = (to, from, depth) => {
-  if (from?.kind === 'rejection') {
-    return false
-  }
-
   const toMatches = to?.matches ?? []
   const fromMatches = from?.matches ?? []
 
@@ -26,7 +18,7 @@ export const isRouteLeave: RouteHookCondition = (to, from, depth) => {
 }
 
 export const isRouteUpdate: RouteHookCondition = (to, from, depth) => {
-  return to?.kind === 'route' && from?.kind === 'route' && to.matches.at(depth)?.id === from.matches.at(depth)?.id
+  return Boolean(to && from && to.matches.at(depth)?.id === from.matches.at(depth)?.id)
 }
 
 export function getRouteHookCondition(lifecycle: HookLifecycle): RouteHookCondition {

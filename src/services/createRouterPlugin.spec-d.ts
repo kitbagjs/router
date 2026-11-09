@@ -9,7 +9,7 @@ import { RouterReplace } from '@/types/routerReplace'
 
 describe('hooks', () => {
   const NotAuthorized = createRejection({
-    name: 'NotAuthorized',
+    type: 'NotAuthorized',
 
     status: 404,
   })

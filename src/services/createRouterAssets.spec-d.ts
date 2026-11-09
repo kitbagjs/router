@@ -13,7 +13,7 @@ test('router assets include plugin routes in hook callbacks', () => {
   const assets = createRouterAssets(createRouter([home], {}, [plugin]))
 
   assets.onBeforeRouteUpdate((route) => {
-    expectTypeOf(route.name).toEqualTypeOf<'home' | 'user'>()
+    expectTypeOf(route.name).toEqualTypeOf<'home' | 'user' | 'NotFound'>()
 
     if (route.name === 'user') {
       expectTypeOf(route.params.id).toEqualTypeOf<string>()

@@ -3,7 +3,7 @@ import { expectTypeOf, test } from 'vitest'
 import { createRejection } from '@/services/createRejection'
 
 test('status is optional', () => {
-  createRejection({ name: 'Unauthorized', status: 401 })
+  createRejection({ type: 'Unauthorized', status: 401 })
 
   createRejection({ name: 'Unauthorized' })
 })
@@ -21,8 +21,11 @@ test('rejections support chainable titles without URL route methods', () => {
   // @ts-expect-error views are added in a separate feature
   denied.addView({})
   expectTypeOf(denied.name).toEqualTypeOf<'Denied'>()
-  // @ts-expect-error rejection definitions do not expose ordinary route hooks
-  denied.onBeforeRouteEnter(() => {})
+  denied.onBeforeRouteEnter((to, { abort }) => {
+    expectTypeOf(to.kind).toEqualTypeOf<'rejection'>()
+    expectTypeOf(to.name).toEqualTypeOf<'Denied'>()
+    expectTypeOf(abort).toBeFunction()
+  })
   // @ts-expect-error rejections do not have URL aliases
   denied.addAlias('/denied')
   // @ts-expect-error rejection definitions cannot declare a path

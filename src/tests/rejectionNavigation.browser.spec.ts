@@ -44,7 +44,8 @@ test('a rejection owns the destination and preserves the attempted route only as
   expect(router.route.query.get('page')).toBe('2')
   expect(router.route.hash).toBe('#details')
   await expect(router.route.getTitle()).resolves.toBe('Denied: Denied')
-  expect(enter).not.toHaveBeenCalled()
+  expect(enter).toHaveBeenCalledOnce()
+  expect(enter.mock.calls[0][0]).toMatchObject({ kind: 'rejection', name: 'Denied' })
   expect(rejected).toHaveBeenCalledOnce()
   expect(leave).toHaveBeenCalledOnce()
 })
@@ -175,4 +176,135 @@ test.each(['progressive', 'blocking'] as const)('a %s loader rejection keeps one
   router.back()
   await flushPromises()
   expect(router.route.name).toBe('home')
+})
+
+test('rejections run enter, update, and leave hooks locally and globally', async () => {
+  const local: string[] = []
+  const global: string[] = []
+  let signedIn = false
+  const denied = createRejection({ name: 'Denied' })
+    .onBeforeRouteEnter((_to, context) => {
+      local.push('before enter')
+      expect(context.abort).toBeTypeOf('function')
+      expect(context.reject).toBeTypeOf('function')
+      expect(context.push).toBeTypeOf('function')
+    })
+    .onAfterRouteEnter(() => {
+      local.push('after enter')
+    })
+    .onBeforeRouteUpdate(() => {
+      local.push('before update')
+    })
+    .onAfterRouteUpdate(() => {
+      local.push('after update')
+    })
+    .onBeforeRouteLeave(() => {
+      local.push('before leave')
+    })
+    .onAfterRouteLeave(() => {
+      local.push('after leave')
+    })
+  const requested = vi.fn()
+  denied.onRejection(requested)
+  const page = createRoute({ name: 'page', path: '/page', context: [denied] })
+    .onBeforeRouteEnter((_to, { reject }) => {
+      if (!signedIn) {
+        reject('Denied')
+      }
+    })
+  const router = createRouter([page], { initialUrl: '/page' })
+  onTestFinished(router.stop)
+  router.onBeforeRouteEnter((to) => {
+    if (to.kind === 'rejection') {
+      global.push('before enter')
+    }
+  })
+  router.onAfterRouteEnter((to) => {
+    if (to.kind === 'rejection') {
+      global.push('after enter')
+    }
+  })
+  router.onBeforeRouteUpdate((to) => {
+    if (to.kind === 'rejection') {
+      global.push('before update')
+    }
+  })
+  router.onAfterRouteUpdate((to) => {
+    if (to.kind === 'rejection') {
+      global.push('after update')
+    }
+  })
+  router.onBeforeRouteLeave((_to, { from }) => {
+    if (from.kind === 'rejection') {
+      global.push('before leave')
+    }
+  })
+  router.onAfterRouteLeave((_to, { from }) => {
+    if (from.kind === 'rejection') {
+      global.push('after leave')
+    }
+  })
+
+  await router.start()
+  expect(local).toEqual(['before enter', 'after enter'])
+  expect(global).toEqual(local)
+  expect(requested).toHaveBeenLastCalledWith('Denied', expect.objectContaining({ to: expect.objectContaining({ name: 'page' }) }))
+
+  router.route.query.set('reason', 'expired')
+  await flushPromises()
+  expect(router.route.name).toBe('Denied')
+  expect(router.route.query.get('reason')).toBe('expired')
+  expect(local).toEqual(['before enter', 'after enter', 'before update', 'after update'])
+  expect(global).toEqual(local)
+  expect(requested).toHaveBeenCalledTimes(2)
+
+  signedIn = true
+  router.refresh()
+  await flushPromises()
+  expect(router.route.name).toBe('page')
+  expect(local).toEqual(['before enter', 'after enter', 'before update', 'after update', 'before leave', 'after leave'])
+  expect(global).toEqual(local)
+})
+
+test('a rejection before-enter hook can abort while onRejection still reports the attempt', async () => {
+  const entered = vi.fn()
+  const requested = vi.fn()
+  const denied = createRejection({ name: 'Denied' })
+    .onBeforeRouteEnter((_to, { abort }) => abort())
+    .onAfterRouteEnter(entered)
+  denied.onRejection(requested)
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([home], { initialUrl: '/', rejections: [denied] })
+  onTestFinished(router.stop)
+  await router.start()
+
+  await router.reject('Denied')
+
+  expect(router.route.name).toBe('home')
+  expect(requested).toHaveBeenCalledOnce()
+  expect(entered).not.toHaveBeenCalled()
+})
+
+test('rejection before-enter hooks are awaited and can select another rejection', async () => {
+  const ready = Promise.withResolvers<void>()
+  const locked = createRejection({ name: 'Locked' })
+  const denied = createRejection({ name: 'Denied', context: [locked] })
+    .onBeforeRouteEnter(async (_to, { reject }) => {
+      await ready.promise
+      reject('Locked')
+    })
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([home], { initialUrl: '/', rejections: [denied] })
+  onTestFinished(router.stop)
+  await router.start()
+
+  const navigation = router.reject('Denied')
+  await flushPromises()
+  expect(router.route.name).toBe('home')
+  ready.resolve()
+  await navigation
+
+  expect(router.route.name).toBe('Locked')
+  assert(router.route.kind === 'rejection')
+  expect(router.route.source?.name).toBe('home')
 })

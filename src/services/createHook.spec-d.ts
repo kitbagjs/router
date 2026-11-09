@@ -9,7 +9,7 @@ import { ResolvedRoute } from '@/types/resolved'
 
 test('declared context types helpers and the hook attaches to compatible lifecycles', () => {
   const login = createRoute({ name: 'login', path: '/login' })
-  const denied = createRejection({ name: 'Denied' })
+  const denied = createRejection({ type: 'Denied' })
   const hook = createHook({
     context: [login, denied],
     hook: (route, context) => {

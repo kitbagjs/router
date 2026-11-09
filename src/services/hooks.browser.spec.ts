@@ -146,12 +146,12 @@ test('global hooks are called correctly', async () => {
   router.reject('NotFound')
   await flushPromises()
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(5)
   expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
   expect(onBeforeRouteLeave).toHaveBeenCalledTimes(3)
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(3)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(5)
   expect(onError).toHaveBeenCalledTimes(0)
   expect(onRejection).toHaveBeenCalledTimes(1)
 })
@@ -316,7 +316,7 @@ test('rejection hooks are called correctly', async () => {
   const onRejection = vi.fn()
 
   const rejection = createRejection({
-    name: 'CustomRejection',
+    type: 'CustomRejection',
 
     status: 404,
   })

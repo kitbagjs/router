@@ -874,7 +874,7 @@ describe('router.onRejection', () => {
     const onRejection = vi.fn()
 
     const rejection = createRejection({
-      name: 'CustomRejection',
+      type: 'CustomRejection',
 
       status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
@@ -1654,7 +1654,7 @@ describe('router.render response', () => {
   })
 
   test('returns the title of the rejection that rendered', async () => {
-    const locked = createRejection({ name: 'Locked', status: 423, component })
+    const locked = createRejection({ type: 'Locked', status: 423, component })
     const title = vi.fn(() => 'locked')
 
     locked.setTitle(title)
@@ -1662,7 +1662,11 @@ describe('router.render response', () => {
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (to.kind !== 'rejection') {
+        reject('Locked')
+      }
+    })
 
     const result = rendered(await router.render())
 
@@ -1692,7 +1696,7 @@ describe('router.render response', () => {
   test.each(['success', 'reject'] as const)('awaits the async title for a %s response', async (kind) => {
     const pending = Promise.withResolvers<string>()
     const title = vi.fn(() => pending.promise)
-    const locked = createRejection({ name: 'Locked', component })
+    const locked = createRejection({ type: 'Locked', component })
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
 
     route.setTitle(title)
@@ -1701,7 +1705,11 @@ describe('router.render response', () => {
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
     if (kind === 'reject') {
-      router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+      router.onBeforeRouteEnter((to, { reject }) => {
+        if (to.kind !== 'rejection') {
+          reject('Locked')
+        }
+      })
     }
 
     const settled = vi.fn()
@@ -1726,7 +1734,7 @@ describe('router.render response', () => {
     const title = vi.fn(async () => {
       throw failure
     })
-    const locked = createRejection({ name: 'Locked', component })
+    const locked = createRejection({ type: 'Locked', component })
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
 
     route.setTitle(title)
@@ -1735,7 +1743,11 @@ describe('router.render response', () => {
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
     if (kind === 'reject') {
-      router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+      router.onBeforeRouteEnter((to, { reject }) => {
+        if (to.kind !== 'rejection') {
+          reject('Locked')
+        }
+      })
     }
 
     await expect(router.render()).rejects.toBe(failure)
@@ -1765,7 +1777,11 @@ describe('router.render response', () => {
 
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (to.kind !== 'rejection') {
+        reject('Locked')
+      }
+    })
 
     await router.start()
 
@@ -1871,11 +1887,15 @@ describe('router.render response', () => {
   })
 
   test('given a rejection that declares a status, returns that status', async () => {
-    const rejection = createRejection({ name: 'Unauthorized', status: 401 })
+    const rejection = createRejection({ type: 'Unauthorized', status: 401 })
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (to.kind === 'rejection') {
+        return
+      }
+
       reject('Unauthorized')
     })
 
@@ -1887,11 +1907,15 @@ describe('router.render response', () => {
   })
 
   test('given a rejection without a status, responds 200', async () => {
-    const rejection = createRejection({ name: 'Locked' })
+    const rejection = createRejection({ type: 'Locked' })
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (to.kind === 'rejection') {
+        return
+      }
+
       reject('Locked')
     })
 
@@ -1903,11 +1927,15 @@ describe('router.render response', () => {
   })
 
   test('given rejectStatus, uses it for a rejection without a status of its own', async () => {
-    const rejection = createRejection({ name: 'Locked' })
+    const rejection = createRejection({ type: 'Locked' })
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (to.kind === 'rejection') {
+        return
+      }
+
       reject('Locked')
     })
 
@@ -1919,11 +1947,15 @@ describe('router.render response', () => {
   })
 
   test('a rejection status wins over rejectStatus', async () => {
-    const rejection = createRejection({ name: 'Locked', status: 423 })
+    const rejection = createRejection({ type: 'Locked', status: 423 })
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (to.kind === 'rejection') {
+        return
+      }
+
       reject('Locked')
     })
 

@@ -11,7 +11,7 @@ test.each(['route', 'router'] as const)('late %s hooks register navigation and r
   const home = createRoute({ name: 'home', path: '/' })
   const source = createRoute({ name: 'source', path: '/source/[id]' })
   const target = createRoute({ name: 'target', path: '/target' })
-  const denied = createRejection({ name: 'Denied' })
+  const denied = createRejection({ type: 'Denied' })
   const router = createRouter([home, source], { base: '/app', initialUrl: '/app' })
   const rejected = vi.fn()
   router.onRejection(rejected)
