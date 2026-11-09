@@ -14,12 +14,13 @@ export type GetDataKeyOptions = {
    */
   depth: number,
   /**
-   * Whether the value comes from the owning match's views (props) or loaders.
+   * Whether the owning match computes props, loader data, or tags.
    */
   kind: DataKind,
   /**
    * The view name in `route.matches[depth].views`, or the loader name in
-   * `route.matches[depth].loaders`. Unattached loaders use their runtime loader ID instead.
+   * `route.matches[depth].loaders`, or "tags" for its tag callback. Unattached loaders use their
+   * runtime loader ID instead.
    */
   name: string,
 }
