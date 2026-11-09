@@ -5,8 +5,8 @@ import { component } from '@/utilities/testHelpers'
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, onTestFinished, test, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
-import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader, useRoute } from '@/main'
+import { defineComponent, h, onBeforeUnmount } from 'vue'
+import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, RouterView, useLoader, useRoute } from '@/main'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 
 vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
@@ -559,6 +559,167 @@ test('loader data follows navigation', async () => {
   await flushPromises()
 
   expect(wrapper.text()).toBe('user-2')
+})
+
+test.each([false, true])('a departing view does not run its loader against the destination (pending: %s)', async (pending) => {
+  const calls: string[] = []
+  const loaded = Promise.withResolvers<string>()
+  const loader = createLoader({
+    load: (route) => {
+      calls.push(route.name)
+      return pending ? loaded.promise : route.name
+    },
+  })
+  const firstView = defineComponent({
+    setup() {
+      const { data } = useLoader(loader)
+      return () => h('p', data.value)
+    },
+  })
+  const first = createRoute({ name: 'first', path: '/' }).addLoader(loader)
+    .addView(firstView)
+  const second = createRoute({ name: 'second', path: '/second' }).addView({ template: '<p>Second</p>' })
+  const router = createRouter([first, second], { initialUrl: '/' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+  expect(calls).toEqual(['first'])
+  vi.mocked(warnLoaderFallback).mockClear()
+
+  await router.push('second')
+  loaded.resolve('first')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Second')
+  expect(calls).toEqual(['first'])
+  expect(warnLoaderFallback).not.toHaveBeenCalled()
+})
+
+test('a departing view does not read the destination loader data before unmounting', async () => {
+  const loader = createLoader({ load: (route) => route.name })
+  const beforeUnmount = vi.fn()
+  const firstView = defineComponent({
+    setup() {
+      const { data } = useLoader(loader)
+      onBeforeUnmount(() => beforeUnmount(data.value))
+      return () => h('p', data.value)
+    },
+  })
+  const first = createRoute({ name: 'first', path: '/' }).addLoader(loader)
+    .addView(firstView)
+  const second = createRoute({ name: 'second', path: '/second' }).addLoader(loader)
+    .addView({ template: '<p>Second</p>' })
+  const router = createRouter([first, second], { initialUrl: '/' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+  expect(wrapper.text()).toBe('first')
+
+  await router.push('second')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Second')
+  expect(beforeUnmount).toHaveBeenCalledExactlyOnceWith('first')
+})
+
+test('a retained parent view follows child params and sibling navigation', async () => {
+  const loader = createLoader({ load: (route) => `${route.name}:${route.params.id}` })
+  const setup = vi.fn(() => {
+    const { data } = useLoader(loader)
+    return () => h('section', [h('p', data.value), h(RouterView)])
+  })
+  const parent = createRoute({ name: 'parent', path: '/parent' })
+    .addLoader(loader)
+    .addView(defineComponent({ setup }))
+  const first = createRoute({ parent, name: 'first', path: '/first/[id]' }).addView({ template: '<p>First</p>' })
+  const second = createRoute({ parent, name: 'second', path: '/second/[id]' }).addView({ template: '<p>Second</p>' })
+  const router = createRouter([first, second], { initialUrl: '/parent/first/1' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+  expect(wrapper.text()).toBe('first:1First')
+
+  await router.push('/parent/first/2')
+  await flushPromises()
+  expect(wrapper.text()).toBe('first:2First')
+
+  await router.push('/parent/second/3')
+  await flushPromises()
+  expect(wrapper.text()).toBe('second:3Second')
+  expect(setup).toHaveBeenCalledOnce()
+})
+
+test('a departing child preserves its parent loader data', async () => {
+  const loader = createLoader({ load: (route) => route.name })
+  const beforeUnmount = vi.fn()
+  const firstView = defineComponent({
+    setup() {
+      const { data } = useLoader(loader)
+      onBeforeUnmount(() => beforeUnmount(data.value))
+      return () => h('p', data.value)
+    },
+  })
+  const parent = createRoute({ path: '/parent' }).addLoader(loader)
+  const first = createRoute({ parent, name: 'first', path: '/first' }).addView(firstView)
+  const second = createRoute({ parent, name: 'second', path: '/second' }).addView({ template: '<p>Second</p>' })
+  const router = createRouter([first, second], { initialUrl: '/parent/first' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+  expect(wrapper.text()).toBe('first')
+
+  await router.push('second')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Second')
+  expect(beforeUnmount).toHaveBeenCalledExactlyOnceWith('first')
+})
+
+test('an aborted departure keeps the view following loader updates', async () => {
+  const loader = createLoader({ load: (route) => String(route.params.id) })
+  const view = defineComponent({
+    setup() {
+      const { data } = useLoader(loader)
+      return () => h('p', data.value)
+    },
+  })
+  const first = createRoute({ name: 'first', path: '/first/[id]' }).addLoader(loader)
+    .addView(view)
+  const second = createRoute({ name: 'second', path: '/second' })
+    .onBeforeRouteEnter((_to, { abort }) => abort())
+  const router = createRouter([first, second], { initialUrl: '/first/1' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+  expect(wrapper.text()).toBe('1')
+
+  await router.push('second')
+  await flushPromises()
+  expect(wrapper.text()).toBe('1')
+
+  await router.push('/first/2')
+  await flushPromises()
+  expect(wrapper.text()).toBe('2')
+})
+
+test('a consumer outside RouterView follows navigation between routes', async () => {
+  const loader = createLoader({ load: (route) => route.name })
+  const first = createRoute({ name: 'first', path: '/first' }).addLoader(loader)
+  const second = createRoute({ name: 'second', path: '/second' }).addLoader(loader)
+  const router = createRouter([first, second], { initialUrl: '/first' })
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(loader))
+  expect(result.data.value).toBe('first')
+
+  await router.push('second')
+  await flushPromises()
+
+  expect(result.data.value).toBe('second')
 })
 
 test('a component can await data in setup under suspense', async () => {

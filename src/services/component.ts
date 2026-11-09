@@ -11,6 +11,7 @@ import { createUseRoute } from '@/compositions/useRoute'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { useHasSuspenseBoundary } from '@/compositions/useHasSuspenseBoundary'
 import { createUseRouterSuspense } from '@/compositions/useRouterSuspense'
+import { MaybePromise } from '@/types/utilities'
 
 type Constructor = new (...args: any) => any
 
@@ -42,8 +43,12 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
       const reportError = useRouterSuspense('props')
-      const props = computed(() => {
+      const props = computed<MaybePromise<PropsResult> | undefined>((previous) => {
         const depth = route.matches.findIndex((match) => match.id === id)
+
+        if (depth < 0) {
+          return previous
+        }
 
         return getRouteProps(navigation.current(), { depth, name }, route)
       })
@@ -53,7 +58,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
         const result = await props
         const current = navigation.current()
 
-        if (current !== owner || result.kind !== 'error') {
+        if (current !== owner || result?.kind !== 'error') {
           return
         }
 
