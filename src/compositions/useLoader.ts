@@ -46,8 +46,8 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     const navigation = useRouterNavigation()
     const isServerRendering = useIsServerRendering()
     const route: ResolvedRoute = router.route
-    const depth = useRouterDepth() - 1
-    const routeId = route.matches[depth]?.id
+    const depth = useRouterDepth()
+    const routeId = route.matches[depth - 1]?.id
     const isRouteActive = computed(() => {
       if (!routeId) {
         return true
