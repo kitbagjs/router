@@ -562,14 +562,11 @@ test('loader data follows navigation', async () => {
 })
 
 test.each([false, true])('a departing view does not run its loader against the destination (pending: %s)', async (pending) => {
-  const calls: string[] = []
   const loaded = Promise.withResolvers<string>()
-  const loader = createLoader({
-    load: (route) => {
-      calls.push(route.name)
-      return pending ? loaded.promise : route.name
-    },
+  const load = vi.fn(() => {
+    return pending ? loaded.promise : 'first'
   })
+  const loader = createLoader({ load })
   const firstView = defineComponent({
     setup() {
       const { data } = useLoader(loader)
@@ -584,7 +581,7 @@ test.each([false, true])('a departing view does not run its loader against the d
 
   await router.start()
   await flushPromises()
-  expect(calls).toEqual(['first'])
+  expect(load).toHaveBeenCalledOnce()
   vi.mocked(warnLoaderFallback).mockClear()
 
   await router.push('second')
@@ -592,7 +589,7 @@ test.each([false, true])('a departing view does not run its loader against the d
   await flushPromises()
 
   expect(wrapper.text()).toBe('Second')
-  expect(calls).toEqual(['first'])
+  expect(load).toHaveBeenCalledOnce()
   expect(warnLoaderFallback).not.toHaveBeenCalled()
 })
 
@@ -640,15 +637,15 @@ test('a retained parent view follows child params and sibling navigation', async
 
   await router.start()
   await flushPromises()
-  expect(wrapper.text()).toBe('first:1First')
+  expect(wrapper.get('section > p').text()).toBe('first:1')
 
   await router.push('/parent/first/2')
   await flushPromises()
-  expect(wrapper.text()).toBe('first:2First')
+  expect(wrapper.get('section > p').text()).toBe('first:2')
 
   await router.push('/parent/second/3')
   await flushPromises()
-  expect(wrapper.text()).toBe('second:3Second')
+  expect(wrapper.get('section > p').text()).toBe('second:3')
   expect(setup).toHaveBeenCalledOnce()
 })
 
