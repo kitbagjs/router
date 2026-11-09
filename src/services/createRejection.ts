@@ -9,12 +9,15 @@ import { RouteSetTitle } from '@/types/routeTitle'
 
 export function createRejection<TType extends string>(options: RejectionOptions<TType>): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
 
-export function createRejection({ type, component, status }: RejectionOptions): Rejection {
+export function createRejection(options: RejectionOptions): Rejection {
+  const { component, status } = options
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Support the legacy option.
+  const name = 'name' in options ? options.name : options.type
   const { store, ...hooks } = createRejectionHooks()
 
   const route = createRoute({
-    name: type,
-  }).addView(markRaw(component ?? genericRejection(type)))
+    name,
+  }).addView(markRaw(component ?? genericRejection(name)))
 
   const { setTitle } = route
 
@@ -27,7 +30,8 @@ export function createRejection({ type, component, status }: RejectionOptions): 
   } satisfies RejectionInternal
 
   const rejection = {
-    type,
+    name,
+    type: name,
     status,
     setTitle,
     getTitle,
