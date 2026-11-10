@@ -54,9 +54,11 @@ export function createNavigation<TResolved extends ResolvedRoute>({ route, compu
 
     activate(navigation)
     store.activate((response) => {
-      if (!controller.signal.aborted) {
-        return onResponse?.(response)
+      if (controller.signal.aborted) {
+        return
       }
+
+      return onResponse?.(response)
     })
     const work = compute()
     onCommit(work, controller)
