@@ -5,8 +5,12 @@ import { createPropsComputation } from '@/services/createPropsComputation'
 import { createLoaderComputation } from '@/services/createLoaderComputation'
 import { getPrefetchOption } from '@/utilities/prefetch'
 
-export function getComputations(route: ResolvedRoute): Computation[] {
+export function getComputations(route: ResolvedRoute | null): Computation[] {
   const computations: Computation[] = []
+
+  if (!route) {
+    return computations
+  }
 
   for (const [depth, match] of route.matches.entries()) {
     for (const [name, { props, prefetch, transformer }] of Object.entries(match.views)) {

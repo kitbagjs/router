@@ -1,6 +1,6 @@
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { getDataKey } from '@/services/getDataKey'
-import { expect, onTestFinished, test, vi } from 'vitest'
+import { assert, expect, onTestFinished, test, vi } from 'vitest'
 import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { payloadToScript, RouterPayload } from '@/services/payload'
@@ -59,9 +59,9 @@ test('a payload whose route no longer matches rejects with NotFound', async () =
 })
 
 test('a payload with a rejection is adopted synchronously when the router starts', async () => {
-  embed({ kind: 'reject', url: '/secret', rejection: 'Locked' })
+  embed({ kind: 'reject', url: '/secret', rejection: 'Locked', values: [] })
 
-  const locked = createRejection({ type: 'Locked', status: 423 })
+  const locked = createRejection({ name: 'Locked', status: 423 })
   const onRejection = vi.fn()
   const secret = createRoute({ name: 'secret', path: '/secret' })
   const router = createRouter([secret], { initialUrl: '/secret', rejections: [locked] })
@@ -77,10 +77,10 @@ test('a payload with a rejection is adopted synchronously when the router starts
   expect(onRejection).toHaveBeenCalledWith('Locked', { to: expect.objectContaining({ name: 'secret' }), from: null, remove: expect.any(Function) })
 })
 
-test('a reject payload whose url no longer matches rejects with NotFound', async () => {
-  embed({ kind: 'reject', url: '/gone', rejection: 'Locked' })
+test('a rejection payload is restored even when its url has no matching route', async () => {
+  embed({ kind: 'reject', url: '/gone', rejection: 'Locked', values: [] })
 
-  const locked = createRejection({ type: 'Locked', status: 423 })
+  const locked = createRejection({ name: 'Locked', status: 423 })
   const onRejection = vi.fn()
   const home = createRoute({ name: 'home', path: '/' })
   const router = createRouter([home], { initialUrl: '/gone', rejections: [locked] })
@@ -89,7 +89,7 @@ test('a reject payload whose url no longer matches rejects with NotFound', async
 
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null, remove: expect.any(Function) })
+  expect(onRejection).toHaveBeenCalledWith('Locked', { to: null, from: null, remove: expect.any(Function) })
 })
 
 test('adopting a payload leaves the document title the server rendered', async () => {
@@ -119,6 +119,7 @@ test('a payload for a url with schema params is adopted synchronously when the r
   const ready = router.start()
 
   expect(router.route.name).toBe('post')
+  assert(router.route.kind === 'route')
   expect(router.route.params.id).toBe(5)
   expect(router.started.value).toBe(true)
 
@@ -211,6 +212,7 @@ test('hydration uses the initial history state when matching stored values', asy
 
   await router.start()
 
+  assert(router.route.kind === 'route')
   expect(router.route.state.page).toBe(2)
   expect(load).not.toHaveBeenCalled()
 })
@@ -247,6 +249,7 @@ test.each([
 
   const wrapper = mount(defineComponent({
     setup() {
+      assert(client.route.kind === 'route')
       const { data } = useLoader(client.route.loaders.default)
 
       return () => h('p', data.value)

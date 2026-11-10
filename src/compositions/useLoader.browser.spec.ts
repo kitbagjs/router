@@ -33,7 +33,7 @@ test('shares the route load between consumers', async () => {
   await router.start()
   const { imported, attached } = mountConsumer(router, () => ({
     imported: useLoader(loader),
-    attached: useLoader(router.route.loaders.user),
+    attached: useLoader(createRouterAssets(router).useRoute('user').loaders.user),
   }))
 
   expect(imported.loading.value).toBe(true)
@@ -111,7 +111,7 @@ test('reads the selected named attachment', async () => {
     .addLoader(loader, { name: 'second' })
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
-  const selected = mountConsumer(router, () => useLoader(router.route.loaders.second))
+  const selected = mountConsumer(router, () => useLoader(createRouterAssets(router).useRoute('home').loaders.second))
 
   expect(selected.data.value).toBe(2)
 })
@@ -341,8 +341,10 @@ describe('fallback loaders', () => {
     await router.start()
     const result = mountConsumer(router, () => useLoader(loader))
 
-    await vi.waitFor(() => expect(router.route.name).toBe('target'))
-    expect(result.data.value).toBe('arrived')
+    await vi.waitFor(() => {
+      expect(router.route.name).toBe('target')
+      expect(result.data.value).toBe('arrived')
+    })
   })
 
   test('replaces the current history entry when the loader calls replace', async () => {
@@ -373,7 +375,11 @@ describe('fallback loaders', () => {
     const denied = createRejection({ type: 'Denied' })
     const loader = createLoader({
       context: [denied],
-      load: (_route, { reject }) => reject('Denied'),
+      load: (route, { reject }) => {
+        if (route.kind === 'route') {
+          reject('Denied')
+        }
+      },
     })
     const route = createRoute({ name: 'home', path: '/' })
     const router = createRouter([route], { initialUrl: '/' })
@@ -415,8 +421,8 @@ test('reads inline default and named loaders inherited from matched routes', asy
   const router = createRouter([child], { initialUrl: '/parent/child' })
   await router.start()
   const { inherited, posts } = mountConsumer(router, () => ({
-    inherited: useLoader(router.route.loaders.default),
-    posts: useLoader(router.route.loaders.posts),
+    inherited: useLoader(createRouterAssets(router).useRoute('child').loaders.default),
+    posts: useLoader(createRouterAssets(router).useRoute('child').loaders.posts),
   }))
 
   await flushPromises()
@@ -431,7 +437,7 @@ test('updates inline loader data when params or query change', async () => {
     .addLoader((route) => load(route.params.id, route.query.get('page')))
   const router = createRouter([route], { initialUrl: '/1?page=a' })
   await router.start()
-  const result = mountConsumer(router, () => useLoader(router.route.loaders.default))
+  const result = mountConsumer(router, () => useLoader(createRouterAssets(router).useRoute('route').loaders.default))
   await flushPromises()
   expect(result.data.value).toBe('1:a')
 
@@ -452,7 +458,7 @@ test('reads the default loader independently of default view props', async () =>
     .addLoader(() => 'loader')
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
-  const result = mountConsumer(router, () => useLoader(router.route.loaders.default))
+  const result = mountConsumer(router, () => useLoader(createRouterAssets(router).useRoute('route').loaders.default))
 
   await flushPromises()
   expect(result.data.value).toBe('loader')
@@ -501,7 +507,7 @@ test('reads hydrated data without rerunning the loader', async () => {
   const route = createRoute({ name: 'home', path: '/' }).addLoader(load)
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
-  const result = mountConsumer(router, () => useLoader(router.route.loaders.default))
+  const result = mountConsumer(router, () => useLoader(createRouterAssets(router).useRoute('home').loaders.default))
 
   await flushPromises()
   expect(result.data.value).toBe('from server')
@@ -800,7 +806,7 @@ test('selects the committed loader before later global after-update hooks run', 
   const result = mountConsumer(router, () => useLoader(loader))
   expect(result.data.value).toBe('first')
   const afterUpdate = vi.fn(() => {
-    expect(router.route.params.id).toBe('2')
+    expect(createRouterAssets(router).useRoute('page').params.id).toBe('2')
     expect(result.loading.value).toBe(true)
     expect(result.data.value).toBeUndefined()
   })

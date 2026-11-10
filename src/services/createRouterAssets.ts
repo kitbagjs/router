@@ -5,7 +5,7 @@ import { CreateView } from '@/types/view'
 import { createLoader } from '@/services/createLoader'
 import { CreateLoader } from '@/types/loader'
 import { ViewTransition } from '@/components/viewTransition'
-import { Router, RouterRoutes, RouterRejections } from '@/types/router'
+import { Router, RouterRoutes, RouterRejections, RouterHookRoutes } from '@/types/router'
 import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
@@ -45,7 +45,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteLeave: AddBeforeLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>, RouterHookRoutes<TRouter>[number], RouterHookRoutes<TRouter>[number]>,
 
   /**
    * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -55,7 +55,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteUpdate: AddBeforeUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>, RouterHookRoutes<TRouter>[number], RouterHookRoutes<TRouter>[number]>,
 
   /**
    * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -65,7 +65,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteLeave: AddAfterLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteLeave: AddAfterLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>, RouterHookRoutes<TRouter>[number], RouterHookRoutes<TRouter>[number]>,
 
   /**
    * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -75,7 +75,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteUpdate: AddAfterUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteUpdate: AddAfterUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>, RouterHookRoutes<TRouter>[number], RouterHookRoutes<TRouter>[number]>,
 
   /**
    * A guard to verify if a route or unknown value matches a given route name.

@@ -1,3 +1,4 @@
+import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { getRoutesForRouter } from '@/services/getRoutesForRouter'
@@ -8,18 +9,18 @@ import { UnreachableRouteError } from '@/errors/unreachableRouteError'
 import { createHook } from '@/services/createHook'
 import { createRejection } from '@/services/createRejection'
 
-test('returned rejections stay current when hook context adds or replaces definitions', () => {
-  const denied = createRejection({ type: 'Denied' })
+test('returned rejections stay current and reject conflicting names in hook context', () => {
+  const denied = createRejection({ name: 'Denied' })
   const registry = getRoutesForRouter([])
   const { rejections } = registry
 
   registry.addHookContext(createHook({ context: [denied], hook: () => {} }))
   expect(rejections).toContain(denied)
 
-  const replacement = createRejection({ type: 'Denied', status: 403 })
-  registry.addHookContext(createHook({ context: [replacement], hook: () => {} }))
-  expect(rejections.filter((rejection) => rejection.name === 'Denied')).toEqual([replacement])
-  expect(registry.getRejectionByType('Denied')).toBe(replacement)
+  const replacement = createRejection({ name: 'Denied', status: 403 })
+  expect(() => registry.addHookContext(createHook({ context: [replacement], hook: () => {} }))).toThrow(DuplicateNamesError)
+  expect(rejections.filter((rejection) => rejection.name === 'Denied')).toEqual([denied])
+  expect(registry.getRejectionByType('Denied')).toBe(denied)
 })
 
 test('given routes without names, removes routes from response', () => {
@@ -207,4 +208,20 @@ describe('unreachable routes', () => {
 
     expect(() => getRoutesForRouter([], plugins)).toThrow(UnreachableRouteError)
   })
+})
+
+test('ordinary routes and rejections share one name namespace', () => {
+  const route = createRoute({ name: 'Denied', path: '/' })
+  const rejection = createRejection({ name: 'Denied' })
+
+  expect(() => getRoutesForRouter([route], [], { rejections: [rejection] })).toThrow(DuplicateNamesError)
+  expect(() => getRoutesForRouter([createRoute({ name: 'NotFound', path: '/' })])).toThrow(DuplicateNamesError)
+})
+
+test('custom NotFound replaces the built in rejection without becoming a URL match', () => {
+  const notFound = createRejection({ name: 'NotFound' }).setTitle(() => 'Missing')
+  const registry = getRoutesForRouter([], [], { rejections: [notFound] })
+
+  expect(registry.getRejectionByType('NotFound')).toBe(notFound)
+  expect(registry.routes).toEqual([])
 })

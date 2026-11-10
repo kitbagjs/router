@@ -194,13 +194,13 @@ test('rejection from a hook updates document title', async () => {
   await flushPromises()
 
   expect(document.title).toBe('locked')
-  expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'Locked' }), {
+  expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'Locked', kind: 'rejection' }), {
     getParentTitle: expect.any(Function),
   })
 })
 
-test('rejection without a title in a before hook keeps the current route title', async () => {
-  const locked = createRejection({ type: 'Locked', status: 423, component })
+test('rejection without a title in a before hook leaves the document title unchanged', async () => {
+  const locked = createRejection({ name: 'Locked', status: 423, component })
 
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
@@ -227,12 +227,13 @@ test('rejection without a title in a before hook keeps the current route title',
   expect(document.title).toBe('home')
 })
 
-test('rejection without a title in an after hook falls back to the current route title', async () => {
-  const locked = createRejection({ type: 'Locked', status: 423, component })
+test('rejection without a title in an after hook does not fall back to the source title', async () => {
+  const locked = createRejection({ name: 'Locked', status: 423, component })
 
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
+  home.setTitle(() => 'home')
   secret.setTitle(() => 'secret')
 
   const router = createRouter([home, secret], {
@@ -250,7 +251,7 @@ test('rejection without a title in an after hook falls back to the current route
   await router.push('secret')
   await flushPromises()
 
-  expect(document.title).toBe('secret')
+  expect(document.title).toBe('home')
 })
 
 test('rejection with a title wins over the current route title', async () => {
