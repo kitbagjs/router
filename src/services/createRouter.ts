@@ -189,28 +189,29 @@ export function createRouter<
   }
 
   /**
-   * Runs the before hooks for a navigation and reacts to their response. Reports whether the
-   * navigation should continue.
+   * Runs the before hooks for a navigation and reacts to their response.
    */
-  async function runBeforeHooks({ controller, to, from, url, options, progress }: RunBeforeHooksContext): Promise<boolean> {
+  async function runBeforeHooks({ controller, to, from, url, options, progress }: RunBeforeHooksContext): Promise<void> {
     const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
 
     if (controller.signal.aborted) {
-      return false
+      return
     }
 
     switch (response.status) {
       case 'ABORT':
         options.traversal?.restore()
         progress.abort()
+        controller.abort()
 
-        return false
+        return
 
       case 'PUSH':
       case 'REDIRECT':
         await push(...response.to)
+        controller.abort()
 
-        return false
+        return
 
       case 'REJECT':
         if (options.traversal) {
@@ -220,8 +221,9 @@ export function createRouter<
         }
         reject(response.type, { to, from })
         progress.abort()
+        controller.abort()
 
-        return false
+        return
 
       case 'SUCCESS':
         if (options.traversal) {
@@ -230,7 +232,7 @@ export function createRouter<
           history.update(url, options)
         }
 
-        return true
+        return
 
       default:
         const exhaustive: never = response
@@ -304,10 +306,9 @@ export function createRouter<
     })
 
     async function beforeNavigation(controller: AbortController): Promise<void> {
-      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+      await runBeforeHooks({ controller, to, from, url, options, progress })
 
-      if (!shouldCommit) {
-        controller.abort()
+      if (controller.signal.aborted) {
         return
       }
 
