@@ -54,6 +54,7 @@ export type RejectionOptions<TName extends string = string> = RejectionNameOptio
 }
 
 export type Rejection<TName extends string = string> = {
+  kind: 'rejection',
   name: TName,
   /**
    * @deprecated Use name instead.

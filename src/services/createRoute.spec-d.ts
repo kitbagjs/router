@@ -493,3 +493,9 @@ test('props must be passed to addView', () => {
   // @ts-expect-error createRoute only accepts route options
   createRoute({ name: 'route' }, () => ({}))
 })
+
+test('routes have route kind', () => {
+  const route = createRoute({ name: 'home', path: '/' })
+
+  expectTypeOf(route.kind).toEqualTypeOf<'route'>()
+})
