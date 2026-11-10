@@ -8,17 +8,22 @@ test('status is optional', () => {
   createRejection({ name: 'Unauthorized' })
 })
 
-test('rejections support chainable titles without URL route methods', () => {
+test('rejection loaders retain inference and rejection capabilities', () => {
   const denied = createRejection({ name: 'Denied', status: 403 })
+    .addLoader((to) => {
+      expectTypeOf(to.kind).toEqualTypeOf<'rejection'>()
+      expectTypeOf(to.name).toEqualTypeOf<'Denied'>()
+      expectTypeOf(to.params).toEqualTypeOf<{}>()
+      return 42
+    }, { name: 'reason' })
     .setTitle((to) => {
+      expectTypeOf(to.loaders.reason.load).returns.toEqualTypeOf<number>()
       expectTypeOf(to.kind).toEqualTypeOf<'rejection'>()
       expectTypeOf(to.name).toEqualTypeOf<'Denied'>()
       return 'Denied'
     })
 
-  // @ts-expect-error loaders are added in a separate feature
-  denied.addLoader(() => 42)
-  // @ts-expect-error views are added in a separate feature
+  // @ts-expect-error rejection views are added in a separate feature
   denied.addView({})
   expectTypeOf(denied.name).toEqualTypeOf<'Denied'>()
   denied.onBeforeRouteEnter((to, { abort }) => {
@@ -35,7 +40,7 @@ test('rejections support chainable titles without URL route methods', () => {
 })
 
 test('current route and source narrow independently by kind and name', () => {
-  const denied = createRejection({ name: 'Denied' })
+  const denied = createRejection({ name: 'Denied' }).addLoader(() => 42)
   const users = createRoute({ name: 'users', path: '/users/[id]', context: [denied] })
   const home = createRoute({ name: 'home', path: '/' })
   const router = createRouter([users, home])
@@ -46,6 +51,7 @@ test('current route and source narrow independently by kind and name', () => {
   const rejection = useRoute('Denied')
   expectTypeOf(rejection.kind).toEqualTypeOf<'rejection'>()
   expectTypeOf(rejection.params).toEqualTypeOf<{}>()
+  expectTypeOf(rejection.loaders.default.load).returns.toEqualTypeOf<number>()
 
   if (route.kind === 'rejection' && route.source?.name === 'users') {
     expectTypeOf(route.source.params.id).toEqualTypeOf<string>()
@@ -75,10 +81,10 @@ test('current route and source narrow independently by kind and name', () => {
 })
 
 test('custom NotFound replaces the built in definition in the route union', () => {
-  const notFound = createRejection({ name: 'NotFound', meta: { missing: true } })
+  const notFound = createRejection({ name: 'NotFound' }).addLoader(() => 'missing')
   const router = createRouter([], { rejections: [notFound] })
   expectTypeOf(router.route.name).toEqualTypeOf<'NotFound'>()
-  expectTypeOf(router.route.matched.meta.missing).toEqualTypeOf<true>()
+  expectTypeOf(router.route.loaders.default.load).returns.toEqualTypeOf<string>()
   expectTypeOf(router.route.source).toEqualTypeOf<null>()
 })
 
