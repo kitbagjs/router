@@ -287,13 +287,16 @@ export function createRouter<
     const to = find(url, options) ?? null
     const from = getFromRouteForHooks()
     const external = isExternal(url)
+
     const progress = navigationProgress.begin({
       to,
       from,
       expected: countRouteUnits(url, to),
       inert: isSSR || options.hydrating,
     })
+
     const transition = getViewTransition({ to, from, options, enabled: !isSSR && !external })
+
     const { isBlockingNavigation } = getNavigationOption({
       routerNavigation,
       routeNavigation: getRouteNavigationOption(to),
