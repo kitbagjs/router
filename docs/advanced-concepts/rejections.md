@@ -2,6 +2,8 @@
 
 Kitbag Router ships with built in support for rejection handling. Each rejection type you need is registered with a corresponding view, if rejections happen at any point in the router lifecycle the router will handle it.
 
+Rejections are routes selected by `reject()` or, for `NotFound`, when no route matches. They replace the requested route and its layouts while keeping its URL. Rejection names must be unique among routes and rejections.
+
 ## Rejection Types
 
 Creating custom rejections is extremely easily with the [`createRejection`](/api/functions/createRejection) utility. For example, we can add a custom rejection for "AuthNeeded".
@@ -96,7 +98,19 @@ function maybeAuthNeeded() {
 }
 ```
 
+Call `router.refresh()` to retry the requested URL after resolving the rejection, for example after signing in. Rejections support the same before/after enter, update, and leave hooks as routes, including navigation controls. Global hooks also run for rejections; check `to.kind === 'rejection'` when a guard should skip them. `onRejection` still fires when a rejection is requested, before its navigation begins.
+
 ### Get Rejection
+
+While a rejection is displayed, `router.route` and `useRoute()` return the rejection as the current route. It has its own `name` and `kind: 'rejection'`, with no typed URL params. Its nullable `source` contains the originally matched route; it is `null` if no route matched.
+
+```ts
+const route = useRoute('AuthNeeded')
+
+route.name // 'AuthNeeded'
+route.href // The requested URL
+route.source?.name // The originally matched route, if any
+```
 
 Though it's uncommon, your rejection components could access to the current rejection with `useRejection` if you need it.
 
@@ -123,11 +137,13 @@ const authNeededRejection = createRejection({...})
 
 The `setTitle` callback is used to set the document title for the rejection. The callback is given the resolved route and a context object. The callback can be async, and should return a string that should be set as the document.title.
 
+The callback receives the rejection as `to`. Rejections do not inherit the requested route's title.
+
 The context object has the following properties:
 
 | Property | Type | Description |
 | -------- | ---- | ----------- |
-| getParentTitle | () => Promise<string \| undefined> | Promise that resolves to the title of the parent route. |
+| getParentTitle | () => Promise<string \| undefined> | Resolves to `undefined` because rejections have no parent route. |
 
 ```ts
 import { createRejection } from '@kitbag/router'
