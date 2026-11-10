@@ -65,6 +65,7 @@ export type RejectionOptions<TName extends string = string> = RejectionNameOptio
   hash?: never,
   /**
    * The component rendered while this rejection is in effect.
+   * @deprecated Use addView instead.
    */
   component?: Component,
   /**

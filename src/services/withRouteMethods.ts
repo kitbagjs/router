@@ -132,6 +132,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
 
     result = {
       ...route,
+      addView,
       addLoader,
       setTitle,
       onRejection,
