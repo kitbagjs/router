@@ -2,6 +2,7 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { isResolvedRoute, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
 import { RouterResolveOptions } from '@/types/routerResolve'
+import { resolveRouteTitle } from '@/services/resolveRouteTitle'
 
 /**
  * Applies query, hash, and state to an already resolved route the same way a push with those options
@@ -18,13 +19,15 @@ export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolve
   })
   const { query, hash } = parseUrl(href)
 
+  const getTitle = (): Promise<string | undefined> => resolveRouteTitle(updated)
+
   const updated: ResolvedRoute & ResolvedRouteInternal = {
     ...route,
     href,
     query: createResolvedRouteQuery(query),
     hash,
     state: { ...route.state, ...options.state },
-    getTitle: () => route.getRouteTitle(updated),
+    getTitle,
   }
 
   return updated

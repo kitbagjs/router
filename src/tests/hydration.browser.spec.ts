@@ -92,21 +92,29 @@ test('a reject payload whose url no longer matches rejects with NotFound', async
   expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null, remove: expect.any(Function) })
 })
 
-test('adopting a payload leaves the document title the server rendered', async () => {
-  document.title = 'from server markup'
+test('hydration adopts the server title without running its callback again', async () => {
+  document.body.innerHTML = ''
+  const serverTitle = vi.fn(() => 'from server')
+  const serverRoute = createRoute({ name: 'home', path: '/' }).setTitle(serverTitle)
+  const serverRouter = createRouter([serverRoute], { initialUrl: '/', ssr: true })
+  const response = await serverRouter.render()
 
-  embed({ kind: 'success', url: '/', values: [] })
+  if (response.kind !== 'success') {
+    throw new Error('Expected a successful render')
+  }
+
+  expect(serverTitle).toHaveBeenCalledOnce()
+  document.title = response.title ?? ''
+  document.body.innerHTML = response.payload
 
   const title = vi.fn(() => 'from client')
-  const home = createRoute({ name: 'home', path: '/' })
-
-  home.setTitle(title)
-
+  const home = createRoute({ name: 'home', path: '/' }).setTitle(title)
   const router = createRouter([home], { initialUrl: '/' })
 
   await router.start()
 
-  expect(document.title).toBe('from server markup')
+  expect(document.title).toBe('from server')
+  await expect(router.route.getTitle()).resolves.toBe('from server')
   expect(title).not.toHaveBeenCalled()
 })
 

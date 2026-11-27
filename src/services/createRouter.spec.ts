@@ -1711,7 +1711,7 @@ describe('router.render response', () => {
     expect(await rendering).toMatchObject({ kind, title: 'async title' })
   })
 
-  test.each(['success', 'reject'] as const)('a failed title rejects render for a %s response', async (kind) => {
+  test.each(['success', 'reject'] as const)('a failed title reports onError without failing a %s render', async (kind) => {
     const failure = new Error('title failed')
     const title = vi.fn(async () => {
       throw failure
@@ -1728,8 +1728,12 @@ describe('router.render response', () => {
       router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
     }
 
-    await expect(router.render()).rejects.toBe(failure)
+    const onError = vi.fn()
+    router.onError(onError)
 
+    await expect(router.render()).resolves.toMatchObject({ kind, title: undefined })
+
+    expect(onError).toHaveBeenCalledExactlyOnceWith(failure, expect.objectContaining({ source: 'title' }))
     expect(title).toHaveBeenCalledTimes(1)
   })
 

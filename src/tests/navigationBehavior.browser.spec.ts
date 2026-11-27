@@ -133,7 +133,7 @@ describe('route commitment', () => {
     expect(onAfterEnter).toHaveBeenCalled()
   })
 
-  test.each(['props', 'loaders', 'components'] as const)('waits for pending %s independently', async (asset) => {
+  test.each(['props', 'loaders', 'components', 'title'] as const)('waits for pending %s independently', async (asset) => {
     const loaded = Promise.withResolvers<void>()
     const view = { template: '<div>Page</div>' }
     const home = createRoute({ name: 'home', path: '/' })
@@ -155,6 +155,13 @@ describe('route commitment', () => {
       })
       .addLoader(() => {
         return asset === 'loaders' ? loaded.promise : 'ready'
+      })
+      .setTitle(async () => {
+        if (asset === 'title') {
+          await loaded.promise
+        }
+
+        return 'Page'
       })
     const router = createRouter([home, page], { initialUrl: '/', historyMode: 'memory' })
     await router.start()

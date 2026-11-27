@@ -3,12 +3,22 @@ import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { createPropsComputation } from '@/services/createPropsComputation'
 import { createLoaderComputation } from '@/services/createLoaderComputation'
+import { createTitleComputation } from '@/services/createTitleComputation'
 import { getPrefetchOption } from '@/utilities/prefetch'
 
 export function getComputations(route: ResolvedRoute): Computation[] {
   const computations: Computation[] = []
 
   for (const [depth, match] of route.matches.entries()) {
+    if (match.title) {
+      computations.push(createTitleComputation({
+        location: { kind: 'title', depth, name: 'title' },
+        route,
+        callback: match.title,
+        routePrefetch: match.prefetch,
+      }))
+    }
+
     for (const [name, { props, prefetch, transformer }] of Object.entries(match.views)) {
       if (!props) {
         continue

@@ -3,7 +3,8 @@ import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
-import { flushPromises } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
+import { RouterLink } from '@/main'
 
 test('route with title updates document title', async () => {
   const route = createRoute({
@@ -29,7 +30,7 @@ test('route with title updates document title', async () => {
   expect(document.title).toBe(title)
 })
 
-test('route with title and parent with title does not call parent getTitle', async () => {
+test('route with its own title overrides its computed parent title', async () => {
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
@@ -56,7 +57,7 @@ test('route with title and parent with title does not call parent getTitle', asy
 
   await flushPromises()
 
-  expect(parentGetTitle).not.toHaveBeenCalled()
+  expect(parentGetTitle).toHaveBeenCalledOnce()
   expect(childGetTitle).toHaveBeenCalledTimes(1)
   expect(document.title).toBe('child')
 })
@@ -196,6 +197,8 @@ test('rejection from a hook updates document title', async () => {
   expect(document.title).toBe('locked')
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'Locked' }), {
     getParentTitle: expect.any(Function),
+    signal: expect.any(AbortSignal),
+    parent: undefined,
   })
 })
 
@@ -288,7 +291,11 @@ test('a slow title from a previous route does not overwrite the current title', 
   const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
   const fast = createRoute({ name: 'fast', path: '/fast' }).addView(component)
 
-  slow.setTitle(() => slowTitle.promise)
+  const aborted = vi.fn()
+  slow.setTitle((_to, { signal }) => {
+    signal.addEventListener('abort', aborted)
+    return slowTitle.promise
+  })
   fast.setTitle(() => 'fast')
 
   const router = createRouter([home, slow, fast], {
@@ -301,6 +308,7 @@ test('a slow title from a previous route does not overwrite the current title', 
   await flushPromises()
 
   expect(document.title).toBe('fast')
+  expect(aborted).toHaveBeenCalledOnce()
 
   slowTitle.resolve('slow')
   await flushPromises()
@@ -308,7 +316,7 @@ test('a slow title from a previous route does not overwrite the current title', 
   expect(document.title).toBe('fast')
 })
 
-test('title callbacks receive the destination and only getParentTitle in the context', async () => {
+test('title callbacks receive the destination and parent access and cancellation in the context', async () => {
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const about = createRoute({ name: 'about', path: '/about' }).addView(component)
   const callback = vi.fn(() => 'About')
@@ -322,18 +330,16 @@ test('title callbacks receive the destination and only getParentTitle in the con
 
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'about' }), {
     getParentTitle: expect.any(Function),
+    signal: expect.any(AbortSignal),
+    parent: undefined,
   })
   expect(document.title).toBe('About')
 
-  callback.mockClear()
-  await router.route.getTitle()
-
-  expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'about' }), {
-    getParentTitle: expect.any(Function),
-  })
+  await expect(router.route.getTitle()).resolves.toBe('About')
+  expect(callback).toHaveBeenCalledOnce()
 })
 
-test('initial title callbacks only provide getParentTitle in the context', async () => {
+test('initial title callbacks provide parent access and cancellation in the context', async () => {
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const callback = vi.fn(() => 'Home')
   home.setTitle(callback)
@@ -345,10 +351,12 @@ test('initial title callbacks only provide getParentTitle in the context', async
 
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'home' }), {
     getParentTitle: expect.any(Function),
+    signal: expect.any(AbortSignal),
+    parent: undefined,
   })
 })
 
-test.each(['fallback', 'composition'] as const)('parent titles only provide getParentTitle in the context through %s', async (mode) => {
+test.each(['fallback', 'composition'] as const)('parent titles provide parent access and cancellation in the context through %s', async (mode) => {
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const parent = createRoute({ name: 'parent', path: '/parent' }).addView(component)
   const child = createRoute({ name: 'child', path: '/child', parent }).addView(component)
@@ -356,7 +364,7 @@ test.each(['fallback', 'composition'] as const)('parent titles only provide getP
   parent.setTitle(parentCallback)
 
   if (mode === 'composition') {
-    child.setTitle(async (_to, { getParentTitle }) => `${await getParentTitle()} - Child`)
+    child.setTitle(async (_to, { parent }) => `${await parent.getTitle()} - Child`)
   }
 
   const router = createRouter([home, parent, child], { initialUrl: '/' })
@@ -367,6 +375,56 @@ test.each(['fallback', 'composition'] as const)('parent titles only provide getP
 
   expect(parentCallback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'child' }), {
     getParentTitle: expect.any(Function),
+    signal: expect.any(AbortSignal),
+    parent: undefined,
   })
   expect(document.title).toBe(mode === 'composition' ? 'Parent - Child' : 'Parent')
+})
+
+test('titles can compose parent title, loader data, and props from the same navigation', async () => {
+  const data = Promise.withResolvers<{ name: string }>()
+  const parent = createRoute({ path: '/parent' })
+    .addLoader(() => data.promise)
+    .addView(component, { props: () => ({ suffix: 'Details' }) })
+    .setTitle(() => 'Shop')
+  const child = createRoute({ name: 'child', parent, path: '/child' })
+    .setTitle(async (_to, { parent }) => {
+      const title = await parent.getTitle()
+      const data = await parent.getData()
+      const props = await parent.getProps()
+      return `${title} - ${data.name} - ${props.suffix}`
+    })
+  const router = createRouter([child], { initialUrl: '/parent/child' })
+
+  await router.start()
+  data.resolve({ name: 'Product' })
+  await flushPromises()
+
+  expect(document.title).toBe('Shop - Product - Details')
+})
+
+test('navigation adopts a prefetched title without running the callback again', async () => {
+  const pending = Promise.withResolvers<string>()
+  const title = vi.fn(() => pending.promise)
+  const home = createRoute({ name: 'home', path: '/' }).setTitle(() => 'Home')
+  const page = createRoute({ name: 'page', path: '/page' }).setTitle(title)
+  const router = createRouter([home, page], { initialUrl: '/' })
+  await router.start()
+
+  const wrapper = mount(RouterLink, {
+    props: { to: '/page', prefetch: { title: 'eager' } },
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+
+  expect(title).toHaveBeenCalledOnce()
+  expect(document.title).toBe('Home')
+
+  await wrapper.trigger('click')
+  pending.resolve('Prefetched title')
+  await flushPromises()
+
+  expect(router.route.name).toBe('page')
+  expect(document.title).toBe('Prefetched title')
+  expect(title).toHaveBeenCalledOnce()
 })

@@ -6,7 +6,6 @@ import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
-import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { withRouteMethods } from '@/services/withRouteMethods'
 
@@ -24,7 +23,6 @@ export function createRoute(options: CreateRouteOptions): Route {
   const state = options.state ?? {}
   const context = options.context ?? []
   const { store, redirect, ...hooks } = createRouteHooks()
-  const { setTitle, getTitle } = createRouteTitle(options.parent)
   const rawRoute = markRaw({ ...options, id, meta, state, name, views: {}, loaders: {} })
 
   const url = createUrl({
@@ -37,7 +35,6 @@ export function createRoute(options: CreateRouteOptions): Route {
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
     hooks: [store],
-    getTitle,
     redirect,
     aliases: [],
   } satisfies RouteInternal
@@ -50,10 +47,9 @@ export function createRoute(options: CreateRouteOptions): Route {
     state,
     context,
     prefetch: options.prefetch,
-    setTitle,
     ...url,
     ...internal,
-  } satisfies Route & RouteInternal & RouteSetTitle
+  } satisfies Route & RouteInternal
 
   if (isWithParent(options)) {
     const combined = combineRoutes(options.parent, route, options.hoist)

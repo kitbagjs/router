@@ -3,7 +3,7 @@ import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
 import { UrlParamsReading, UrlSchema } from '@/types/url'
-import { GetRouteTitle, GetTitleCallback } from '@/types/routeTitle'
+import { GetTitleCallback } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
 import { GetData } from '@/types/routeLoaders'
 import { GetParam, GetAllParams } from '@/types/paramGetters'
@@ -28,7 +28,6 @@ export type ResolvedRouteInternal = {
   [IS_RESOLVED_ROUTE_SYMBOL]: true,
   schema: UrlSchema,
   hooks: Hooks[],
-  getRouteTitle: GetRouteTitle,
 }
 
 type MatchedRoute<TMatches> = LastInArray<TMatches, CreatedRouteOptions> extends infer TMatched

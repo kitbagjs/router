@@ -9,7 +9,6 @@ import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
 import { ExtractRouteContext } from '@/types/routeContext'
-import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
@@ -29,7 +28,6 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const host = toUrlPart(options.host)
   const context = options.context ?? []
   const { store, redirect, ...hooks } = createRouteHooks()
-  const { getTitle, setTitle } = createRouteTitle(options.parent)
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options, views: {}, loaders: {} })
 
   const url = createUrl({
@@ -43,7 +41,6 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
     hooks: [store],
-    getTitle,
     redirect,
     aliases: [],
   } satisfies RouteInternal
@@ -55,10 +52,9 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     meta,
     state: {},
     context,
-    setTitle,
     ...url,
     ...internal,
-  } satisfies Route & RouteInternal & RouteSetTitle
+  } satisfies Route & RouteInternal
 
   if (isWithParent(options)) {
     return withRouteMethods(combineRoutes(options.parent, route, options.hoist), hooks)
