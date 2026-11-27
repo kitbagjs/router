@@ -98,6 +98,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   } satisfies ResolvedRouteInternal
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
+    kind: 'route',
     ...internal,
     ...createParamGetters({ schema: route.schema, params }),
     id: route.id,

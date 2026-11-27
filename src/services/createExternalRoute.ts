@@ -49,6 +49,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   } satisfies RouteInternal
 
   const route = {
+    kind: 'route',
     id,
     matches: [rawRoute],
     name,

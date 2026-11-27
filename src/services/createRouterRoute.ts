@@ -85,6 +85,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
     updateQuery(query)
   }
 
+  const kind = computed(() => route.value.kind)
   const id = computed(() => route.value.id)
   const matched = computed(() => route.value.matched)
   const matches = computed(() => route.value.matches)
@@ -201,6 +202,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
   // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
   const routerRoute = reactive({
     ...internal,
+    kind,
     loaders,
     id,
     matched,

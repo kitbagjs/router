@@ -17,3 +17,9 @@ test('both naming options preserve literal inference', () => {
   // @ts-expect-error a rejection still requires a name
   createRejection({ status: 403 })
 })
+
+test('rejections have rejection kind', () => {
+  const rejection = createRejection({ name: 'Denied' })
+
+  expectTypeOf(rejection.kind).toEqualTypeOf<'rejection'>()
+})

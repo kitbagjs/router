@@ -32,6 +32,7 @@ test.each([{ name: 'Denied' }, { type: 'Denied' }])('rejects and renders definit
   router.reject('Denied')
   const response = await router.render()
 
+  expect(denied.kind).toBe('rejection')
   expect(denied.name).toBe('Denied')
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- The alias remains backwards compatible.
   expect(denied.type).toBe('Denied')
