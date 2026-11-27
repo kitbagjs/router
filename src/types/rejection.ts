@@ -1,9 +1,15 @@
 import { Component, Ref } from 'vue'
-import { Route } from '@/types/route'
+import { CreatedRouteOptions, Route, RouteInternal } from '@/types/route'
+import { ToRouteMatches } from '@/types/createRouteOptions'
+import { RouteWithMethods } from '@/types/routeWithMethods'
+import { Url } from '@/types/url'
+import { RouteMeta } from '@/types/register'
+import { RouteContext } from '@/types/routeContext'
+import { PrefetchConfig } from '@/types/prefetch'
+import { NavigationBehavior } from '@/types/navigation'
+import { ViewTransitionConfig } from '@/types/viewTransition'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
-import { Hooks } from '@/models/hooks'
-import { GetTitleCallback } from '@/types/routeTitle'
 
 export const BUILT_IN_REJECTIONS = {
   NotFound: 404,
@@ -24,9 +30,7 @@ export function isRejection(value: unknown): value is Rejection & RejectionInter
 
 export type RejectionInternal = {
   [IS_REJECTION_SYMBOL]: true,
-  route: Route,
-  hooks: Hooks[],
-}
+} & RouteInternal
 
 /**
  * Represents an immutable array of Rejection instances.
@@ -40,7 +44,25 @@ export type RejectionNameOptions<TName extends string = string> = { name: TName 
   type: TName,
 }
 
+export type RejectionIdentity<TName extends string = string> = {
+  name: TName,
+  /**
+   * @deprecated Use name instead.
+   */
+  type: TName,
+}
+
 export type RejectionOptions<TName extends string = string> = RejectionNameOptions<TName> & {
+  meta?: RouteMeta,
+  context?: RouteContext[],
+  prefetch?: PrefetchConfig,
+  navigation?: NavigationBehavior,
+  viewTransition?: ViewTransitionConfig,
+  parent?: never,
+  host?: never,
+  path?: never,
+  query?: never,
+  hash?: never,
   /**
    * The component rendered while this rejection is in effect.
    */
@@ -53,19 +75,18 @@ export type RejectionOptions<TName extends string = string> = RejectionNameOptio
   status?: number,
 }
 
-export type Rejection<TName extends string = string> = {
+export type Rejection<TName extends string = string> = Route<Url<{}>> & RejectionIdentity<TName> & {
   kind: 'rejection',
-  name: TName,
-  /**
-   * @deprecated Use name instead.
-   */
-  type: TName,
   status?: number,
-  /**
-   * Returns the title of the rejection from its `setTitle` callback.
-   */
-  getTitle: GetTitleCallback,
 }
+
+export type DefaultNotFound = RejectionWithMethods<{ name: 'NotFound', status: 404 }>
+
+export type RejectionWithMethods<TOptions extends RejectionOptions> = ToRouteMatches<TOptions & { name: RejectionNameOf<TOptions> }> extends [infer TMatch extends CreatedRouteOptions]
+  ? RouteWithMethods<Url<{}>, [TMatch & { kind: 'rejection' }]>
+  : never
+
+type RejectionNameOf<TOptions extends RejectionOptions> = TOptions extends { name: infer TName extends string } ? TName : TOptions extends { type: infer TName extends string } ? TName : never
 
 export type RejectionType<TRejections extends Rejections | undefined> = unknown extends TRejections
   ? never

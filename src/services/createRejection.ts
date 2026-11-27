@@ -1,44 +1,28 @@
-import { createRejectionHooks } from '@/services/createRejectionHooks'
 import { genericRejection } from '@/components/rejection'
-import { RejectionHooks } from '@/types/hooks'
-import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal, RejectionOptions } from '@/types/rejection'
+import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal, RejectionOptions, RejectionWithMethods } from '@/types/rejection'
 import { markRaw } from 'vue'
-import { createRoute } from '@/services/createRoute'
-import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { RouteSetTitle } from '@/types/routeTitle'
+import { createRouteDefinition } from '@/services/createRoute'
+import { withRouteMethods } from '@/services/withRouteMethods'
+import { Route } from '@/types/route'
+import { addViewToMatch, toView } from '@/services/addView'
 
-export function createRejection<TType extends string>(options: RejectionOptions<TType>): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
+export function createRejection<const TOptions extends RejectionOptions>(options: TOptions): RejectionWithMethods<TOptions>
 
-export function createRejection(options: RejectionOptions): Rejection {
-  const { component, status } = options
+export function createRejection(options: RejectionOptions): Route {
+  const { component } = options
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- Support the legacy option.
   const name = 'name' in options ? options.name : options.type
-  const { store, ...hooks } = createRejectionHooks()
+  const { route, hooks } = createRouteDefinition({ ...options, name })
+  const view = toView(markRaw(component ?? genericRejection(name)), undefined)
 
-  const route = createRoute({
-    name,
-  }).addView(markRaw(component ?? genericRejection(name)))
-
-  const { setTitle } = route
-
-  const getTitle = (): Promise<string | undefined> => createResolvedRoute(route).getTitle()
-
-  const internal = {
+  const rejection: Rejection & RejectionInternal = {
+    ...route,
     [IS_REJECTION_SYMBOL]: true,
-    route,
-    hooks: [store],
-  } satisfies RejectionInternal
-
-  const rejection = {
     kind: 'rejection',
-    name,
     type: name,
-    status,
-    setTitle,
-    getTitle,
-    ...hooks,
-    ...internal,
-  } satisfies Rejection & RejectionInternal & RejectionHooks & RouteSetTitle
+    status: options.status,
+    matches: route.matches.map((match) => ({ ...addViewToMatch(match, view), kind: 'rejection' })),
+  }
 
-  return rejection
+  return withRouteMethods(rejection, hooks)
 }

@@ -1,4 +1,4 @@
-import { expectTypeOf, test } from 'vitest'
+import { assert, expectTypeOf, test } from 'vitest'
 import { createLoader, createRoute, createRouter, Loader } from '@/main'
 
 test('route.loaders preserves the definition return and context types', () => {
@@ -7,6 +7,7 @@ test('route.loaders preserves the definition return and context types', () => {
   const parent = createRoute({ name: 'parent' }).addLoader(async () => 42)
   const child = createRoute({ parent, name: 'child' }).addLoader(reusable, { name: 'user' })
   const router = createRouter([child])
+  assert(router.route.name === 'child')
 
   expectTypeOf(router.route.loaders.default).toEqualTypeOf<Loader<Promise<number>>>()
   expectTypeOf(router.route.loaders.user).toEqualTypeOf<typeof reusable>()

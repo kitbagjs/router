@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { Component, defineAsyncComponent, defineComponent } from 'vue'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { assert, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { register } from 'view-transitions-mock'
 import { createRoute } from '@/services/createRoute'
 import { createExternalRoute } from '@/services/createExternalRoute'
@@ -46,8 +46,11 @@ describe('route commitment', () => {
     expect(wrapper.text()).toBe('Not found')
   })
 
-  test('blocking external navigation completes without replacing the local page', async () => {
-    const home = createRoute({ name: 'home', path: '/' }).addView({ template: '<div>Home</div>' })
+  test.each(['https://kitbag.dev/', 'https://elsewhere.dev/'] as const)('blocking external navigation to %s completes without replacing or retitling the local page', async (destination) => {
+    const title = vi.fn(() => 'Home')
+    const home = createRoute({ name: 'home', path: '/' })
+      .addView({ template: '<div>Home</div>' })
+      .setTitle(title)
     const external = createExternalRoute({ name: 'external', host: 'https://kitbag.dev', path: '/' })
     const router = createRouter([home, external], {
       initialUrl: '/',
@@ -56,14 +59,16 @@ describe('route commitment', () => {
     })
     const wrapper = mountRouter(router)
     await router.start()
-    const afterEnter = vi.fn()
-    router.onAfterRouteEnter(afterEnter)
+    const afterLeave = vi.fn()
+    router.onAfterRouteLeave(afterLeave)
 
-    await router.push('external')
+    await router.push(destination)
 
     expect(router.route.name).toBe('home')
     expect(wrapper.text()).toBe('Home')
-    expect(afterEnter).toHaveBeenCalledOnce()
+    expect(afterLeave).toHaveBeenCalledOnce()
+    expect(afterLeave.mock.calls[0][1].signal.aborted).toBe(false)
+    expect(title).toHaveBeenCalledOnce()
   })
 
   test('progressive navigation commits while assets are loading', async () => {
@@ -183,6 +188,7 @@ describe('route commitment', () => {
 
     const navigation = router.push('page', { id: '2' })
     await flushPromises()
+    assert(router.route.kind === 'route')
     expect(router.route.params.id).toBe('1')
     expect(wrapper.text()).toBe('First')
 

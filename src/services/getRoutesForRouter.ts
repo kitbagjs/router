@@ -14,6 +14,19 @@ import { ComponentHook, getHooks } from '@/types/hooks'
 import { Hooks } from '@/models/hooks'
 import { RouteContext } from '@/types/routeContext'
 
+type RouterRouteRegistry = {
+  routes: (Route & RouteInternal)[],
+  rejections: (Rejection & RejectionInternal)[],
+  addHookContext: (hook: ComponentHook | AnyHook) => void,
+  addContext: (context: readonly RouteContext[]) => void,
+  stop: () => void,
+  getRouteByName: (name: string) => Route | undefined,
+  getRejectionByType: {
+    (name: BuiltInRejectionType): Rejection & RejectionInternal,
+    (name: string): (Rejection & RejectionInternal) | undefined,
+  },
+}
+
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
  * Also checks for duplicate names and unreachable paths in the routes.
@@ -21,8 +34,7 @@ import { RouteContext } from '@/types/routeContext'
  * @throws {DuplicateNamesError} If there are duplicate names in the routes.
  * @throws {UnreachableRouteError} If a named route's path does not start with `/`.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], options: RouterOptions = {}) {
+export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], options: RouterOptions = {}): RouterRouteRegistry {
   const routerRoutes = new Map<string, Route & RouteInternal>()
   const routerRejections = new Map<string, Rejection & RejectionInternal>()
 
@@ -32,7 +44,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   ]
 
   const allRejections = [
-    ...Object.entries(BUILT_IN_REJECTIONS).map(([type, status]) => createRejection({ type, status })),
+    ...Object.entries(BUILT_IN_REJECTIONS).map(([type, status]) => createRejection({ name: type, status })),
     ...options.rejections ?? [],
     ...plugins.map((plugin) => plugin.rejections),
   ]
@@ -85,17 +97,48 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
 
     function addTargets(targets: readonly RouteContext[]): void {
       for (const target of targets) {
-        if (isRoute(target)) {
+        if (isRoute(target) && !isRejection(target)) {
           addRoute(target)
         }
 
         if (isRejection(target)) {
+          const existing = pendingRejections.get(target.name)
+
+          if (existing && existing.id !== target.id && !(target.name in BUILT_IN_REJECTIONS)) {
+            throw new DuplicateNamesError(target.name)
+          }
+
+          const registered = routerRejections.get(target.name)
+
+          if (existing?.id === target.id || registered?.id === target.id) {
+            continue
+          }
+
           pendingRejections.set(target.name, target)
+          addTargets(getRouteContext(target))
         }
       }
     }
 
     addTargets(context)
+
+    for (const [name] of pendingRoutes) {
+      if (pendingRejections.has(name) || routerRejections.has(name)) {
+        throw new DuplicateNamesError(name)
+      }
+    }
+
+    for (const [name, rejection] of pendingRejections) {
+      if (pendingRoutes.has(name) || routerRoutes.has(name)) {
+        throw new DuplicateNamesError(name)
+      }
+
+      const existing = routerRejections.get(name)
+
+      if (existing && existing.id !== rejection.id && !(name in BUILT_IN_REJECTIONS)) {
+        throw new DuplicateNamesError(name)
+      }
+    }
 
     for (const [name, route] of pendingRoutes) {
       routerRoutes.set(name, route)

@@ -32,7 +32,7 @@ test('router route can be narrowed', () => {
   const { route, key } = createRouter(routes)
   const isRoute = createIsRoute(key)
 
-  expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'parentB' | 'childA'>()
+  expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'parentB' | 'childA' | 'NotFound'>()
 
   if (route.name === 'parentA') {
     expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA'>()

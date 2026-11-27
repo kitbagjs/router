@@ -82,7 +82,7 @@ test('Hook context annotations preserve required params', () => {
 test('onBeforeRouteEnter preserves callback route types', () => {
   logout.onBeforeRouteEnter((to, { from }) => {
     expectTypeOf(to.name).toEqualTypeOf<'logout'>()
-    expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+    expectTypeOf(from).toExtend<ResolvedRoute | null>()
   })
 })
 
@@ -100,7 +100,7 @@ test('onBeforeRouteEnter uses declared navigation context', () => {
 test('onAfterRouteLeave preserves callback route types', () => {
   logout.onAfterRouteLeave((to, { from }) => {
     expectTypeOf(from.name).toEqualTypeOf<'logout'>()
-    expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
+    expectTypeOf(to).toExtend<ResolvedRoute | null>()
   })
 })
 

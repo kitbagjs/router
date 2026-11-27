@@ -1,4 +1,4 @@
-import { expectTypeOf, test } from 'vitest'
+import { assert, expectTypeOf, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
@@ -17,7 +17,9 @@ test('setTitle chains preserve route types and type the title callback', () => {
     .setTitle(() => 'User')
 
   expectTypeOf(route.setTitle(() => 'Updated')).toEqualTypeOf(route)
-  expectTypeOf(createRouter([route]).route.loaders.default.load).returns.toEqualTypeOf<number>()
+  const router = createRouter([route])
+  assert(router.route.kind === 'route')
+  expectTypeOf(router.route.loaders.default.load).returns.toEqualTypeOf<number>()
   // @ts-expect-error titles must resolve to strings
   route.setTitle(() => 42)
 })

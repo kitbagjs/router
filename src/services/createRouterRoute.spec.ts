@@ -1,5 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
-import { expect, test, vi } from 'vitest'
+import { assert, expect, test, vi } from 'vitest'
 import { computed, toRefs } from 'vue'
 import { createRouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { createRoute } from './createRoute'
@@ -89,6 +89,7 @@ test('sending state, includes state in push options', () => {
     { state: { foo: 'foo' } },
   )
 
+  assert(routerRoute.kind === 'route')
   routerRoute.update('param', 123, { state: { bar: 'bar' } })
 
   expect(push).toHaveBeenCalledWith(
@@ -122,6 +123,7 @@ test('params work with toRefs across navigation without warnings', async () => {
 
   await router.start()
 
+  assert(router.route.kind === 'route')
   const params = router.route.params
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
@@ -170,6 +172,7 @@ test('retained state refs follow navigation and update the current state without
   await router.start()
   await router.push('home', {}, { state: { value: 'one', previous: 'old' } })
 
+  assert(router.route.kind === 'route')
   const state = router.route.state
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 

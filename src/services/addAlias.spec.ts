@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest'
+import { assert, describe, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRoute } from '@/services/createRoute'
 import { getMatchForUrl } from '@/services/getMatchesForUrl'
@@ -502,6 +502,7 @@ describe('router', () => {
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     await router.start()
+    assert(router.route.kind === 'route')
     await router.route.update('id', '7')
 
     expect(router.route.href).toBe('/user/7')

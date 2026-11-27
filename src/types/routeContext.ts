@@ -42,9 +42,11 @@ export type RouteContextToRoute<TContext extends RouteContext[] | undefined> = R
     : FilterRouteContextRoutes<TContext>
 
 type FilterRouteContextRoutes<TContext extends RouteContext[] | undefined> = TContext extends [infer First, ...infer Rest extends RouteContext[]]
-  ? First extends GenericRoute
-    ? [First, ...FilterRouteContextRoutes<Rest>]
-    : FilterRouteContextRoutes<Rest>
+  ? First extends Rejection
+    ? FilterRouteContextRoutes<Rest>
+    : First extends GenericRoute
+      ? [First, ...FilterRouteContextRoutes<Rest>]
+      : FilterRouteContextRoutes<Rest>
   : []
 
 export type RouteContextToRejection<TContext extends RouteContext[] | undefined> = RouteContext[] extends TContext

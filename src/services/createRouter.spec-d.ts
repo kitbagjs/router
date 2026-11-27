@@ -3,7 +3,7 @@ import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { describe, test, expectTypeOf } from 'vitest'
 import { createRouterPlugin } from './createRouterPlugin'
-import { BuiltInRejectionType } from '@/types/rejection'
+import { BuiltInRejectionType, DefaultNotFound } from '@/types/rejection'
 import { createRejection } from './createRejection'
 import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { RouterAbort } from '@/types/routerAbort'
@@ -42,14 +42,15 @@ describe('hooks', () => {
   const router = createRouter(routes, { initialUrl: '/' }, [plugin])
 
   type Routes = typeof routes | typeof pluginRoutes
+  type Destinations = Routes[number] | DefaultNotFound
 
   test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeEnterHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeLeaveHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeUpdateHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeEnterHook<Routes, never, Destinations, Destinations>>()
+    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeLeaveHook<Routes, never, Destinations, Destinations>>()
+    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeUpdateHook<Routes, never, Destinations, Destinations>>()
+    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes, never, Destinations, Destinations>>()
+    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never, Destinations, Destinations>>()
+    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never, Destinations, Destinations>>()
     expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes, never>>()
     expectTypeOf(router.onRejection).toEqualTypeOf<AddRejectionHook<BuiltInRejectionType, Routes>>()
   })
@@ -107,7 +108,7 @@ describe('hooks', () => {
 
   test('context.update', () => {
     router.onBeforeRouteEnter((_to, context) => {
-      expectTypeOf(context.update).toEqualTypeOf<RouteUpdate<ResolvedRouteUnion<Routes[number]>>>()
+      expectTypeOf(context.update).toEqualTypeOf<RouteUpdate<ResolvedRouteUnion<Destinations>>>()
     })
   })
 
@@ -233,7 +234,7 @@ describe('options.rejections in hooks', () => {
 })
 
 describe('route', () => {
-  test('route is never if there are no named routes', () => {
+  test('route is NotFound if there are no named routes', () => {
     const route = createRoute({})
       .addView(component)
 
@@ -241,7 +242,7 @@ describe('route', () => {
 
     const router = createRouter([route])
 
-    expectTypeOf(router.route).toEqualTypeOf<never>()
+    expectTypeOf(router.route.name).toEqualTypeOf<'NotFound'>()
   })
 
   test('route union does not include routes without a name', () => {
@@ -267,7 +268,7 @@ describe('route', () => {
 
     const router = createRouter([routeA, routeB, routeC, routeD])
 
-    expectTypeOf(router.route).toEqualTypeOf<RouterRouteUnion<[typeof routeC, typeof routeD]>>()
+    expectTypeOf<Extract<typeof router.route, { kind: 'route' }>>().toEqualTypeOf<RouterRouteUnion<[typeof routeC, typeof routeD]>>()
   })
 })
 

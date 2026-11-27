@@ -1,7 +1,7 @@
 import { AnyHook } from '@/types/hook'
 import { toHookCallback } from '@/services/toHookCallback'
-import { BeforeHook, AfterHook, HookEntry, ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
-import { getRouteHookCondition } from '@/services/hooks'
+import { BeforeHook, AfterHook, HookEntry, ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, RejectionHookRunner, RejectionHook, AddRejectionHook, BEFORE_LEAVE_HOOKS, BeforeLeaveHookState } from '@/types/hooks'
+import { getRouteHookCondition, claimLeaveHook } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { ContextAbortError } from '@/errors/contextAbortError'
@@ -55,7 +55,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
   const componentStore = new Hooks()
   const globalStores = [globalStore]
 
-  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal, progress }) => {
+  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal, progress, leaveHooks }) => {
     const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStores)
@@ -77,12 +77,18 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
       // counted one at a time so a hook that throws before returning still leaves the count exact
       for (const { hook, remove } of allHooks) {
+        const isGlobalLeave = globalHooks.onBeforeRouteLeave.some((entry) => entry.remove === remove)
+
+        if (isGlobalLeave && !claimLeaveHook(remove, leaveHooks)) {
+          continue
+        }
+
         const callback = toHookCallback(hook)
         progress?.expect(1)
 
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
-        const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
-          lifecycle: 'before',
+        const context = {
+          lifecycle: 'before' as const,
           remove,
           from: from as ResolvedRoute,
           reject,
@@ -92,7 +98,9 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
           abort,
           signal,
           redirectStatus,
-        })))
+        }
+        Object.defineProperty(context, BEFORE_LEAVE_HOOKS, { value: leaveHooks })
+        const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, context)))
 
         progress?.track(result)
         results.push(result)
@@ -250,8 +258,12 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const condition = getRouteHookCondition(lifecycle)
     const hooks = componentStore[lifecycle]
 
-    const wrapped = (to: ResolvedRoute | null, context: Parameters<ComponentHook>[1]): MaybePromise<void> => {
+    const wrapped = (to: ResolvedRoute | null, context: Parameters<ComponentHook>[1] & BeforeLeaveHookState): MaybePromise<void> => {
       if (!condition(to, context.from, depth)) {
+        return
+      }
+
+      if (lifecycle === 'onBeforeRouteLeave' && !claimLeaveHook(remove, context[BEFORE_LEAVE_HOOKS])) {
         return
       }
 
@@ -260,7 +272,9 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
       return callback(to, context)
     }
 
-    return registerHook(hooks, wrapped, { signal })
+    const remove = registerHook(hooks, wrapped, { signal })
+
+    return remove
   }
 
   const addGlobalRouteHooks: AddGlobalHooks = (stores) => {

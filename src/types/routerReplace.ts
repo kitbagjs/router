@@ -1,3 +1,4 @@
+import { RouterRoute } from '@/types/routerRoute'
 import { NavigationBehavior } from '@/types/navigation'
 import { Routes } from '@/types/route'
 import { RoutesName } from '@/types/routesMap'
@@ -29,6 +30,6 @@ export type RouterReplace<
   TRoutes extends Routes
 > = {
   <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterReplaceArgs<TRoutes, TSource>): Promise<void>,
-  (route: ResolvedRoute, options?: RouterReplaceOptions): Promise<void>,
+  (route: ResolvedRoute | RouterRoute, options?: RouterReplaceOptions): Promise<void>,
   (url: UrlString, options?: RouterReplaceOptions): Promise<void>,
 }

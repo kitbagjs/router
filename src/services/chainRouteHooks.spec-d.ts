@@ -1,4 +1,4 @@
-import { expectTypeOf, test } from 'vitest'
+import { assert, expectTypeOf, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRouter } from '@/services/createRouter'
@@ -18,6 +18,7 @@ test('hooks preserve route, loader, and view types through a chain', () => {
     .onAfterRouteUpdate(() => {})
     .onAfterRouteLeave(() => {})
   const router = createRouter([route])
+  assert(router.route.kind === 'route')
 
   expectTypeOf(router.route.name).toEqualTypeOf<'user'>()
   expectTypeOf(router.route.params.id).toEqualTypeOf<string>()

@@ -2,7 +2,7 @@ import { expect, test, vi } from 'vitest'
 import { createRoute } from './createRoute'
 import { createRouter } from './createRouter'
 import { h } from 'vue'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { routes } from '@/utilities/testHelpers'
 import { createExternalRoute } from './createExternalRoute'
 import { createRejection } from './createRejection'
@@ -144,13 +144,14 @@ test('global hooks are called correctly', async () => {
   expect(onRejection).toHaveBeenCalledTimes(0)
 
   router.reject('NotFound')
+  await flushPromises()
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(5)
   expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(3)
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(3)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(5)
   expect(onError).toHaveBeenCalledTimes(0)
   expect(onRejection).toHaveBeenCalledTimes(1)
 })
@@ -332,8 +333,8 @@ test('rejection hooks are called correctly', async () => {
 
   expect(onRejection).toHaveBeenCalledTimes(1)
   expect(onRejection).toHaveBeenCalledWith('CustomRejection', expect.objectContaining({
-    to: null,
-    from: null,
+    to: expect.objectContaining({ href: '/' }),
+    from: expect.objectContaining({ href: '/' }),
   }))
 })
 

@@ -1,4 +1,4 @@
-import { expectTypeOf, test } from 'vitest'
+import { assert, expectTypeOf, test } from 'vitest'
 import { createLoader, createRoute, createRouter, createRouterAssets, UseLoader, useLoader } from '@/main'
 
 test('async definitions infer resolved data for reactive consumption', () => {
@@ -12,6 +12,7 @@ test('async definitions infer resolved data for reactive consumption', () => {
 test('router assets infer data from inline route definitions', () => {
   const route = createRoute({ name: 'home' }).addLoader(() => 42, { name: 'count' })
   const router = createRouter([route])
+  assert(router.route.name === 'home')
   const assets = createRouterAssets(router)
 
   expectTypeOf(assets.useLoader(router.route.loaders.count)).toEqualTypeOf<UseLoader<number>>()

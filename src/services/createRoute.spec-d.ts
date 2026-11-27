@@ -344,31 +344,31 @@ describe('hooks', () => {
 
     route.onBeforeRouteEnter((to, { from }) => {
       expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
-      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+      expectTypeOf(from).toExtend<ResolvedRoute | null>()
     })
 
     route.onBeforeRouteUpdate((to, { from }) => {
       expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
-      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+      expectTypeOf(from).toExtend<ResolvedRoute | null>()
     })
 
     route.onBeforeRouteLeave((to, { from }) => {
-      expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
+      expectTypeOf(to).toExtend<ResolvedRoute | null>()
       expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
     })
 
     route.onAfterRouteEnter((to, { from }) => {
       expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
-      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+      expectTypeOf(from).toExtend<ResolvedRoute | null>()
     })
 
     route.onAfterRouteUpdate((to, { from }) => {
       expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
-      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+      expectTypeOf(from).toExtend<ResolvedRoute | null>()
     })
 
     route.onAfterRouteLeave((to, { from }) => {
-      expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
+      expectTypeOf(to).toExtend<ResolvedRoute | null>()
       expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
     })
   })

@@ -1,3 +1,4 @@
+import { RouterRoute } from '@/types/routerRoute'
 import { NavigationBehavior } from '@/types/navigation'
 import { Routes } from '@/types/route'
 import { RoutesName } from '@/types/routesMap'
@@ -47,6 +48,6 @@ export type RouterPush<
   TRoutes extends Routes = any
 > = {
   <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
-  (route: ResolvedRoute, options?: RouterPushOptions): Promise<void>,
+  (route: ResolvedRoute | RouterRoute, options?: RouterPushOptions): Promise<void>,
   (url: UrlString, options?: RouterPushOptions): Promise<void>,
 }

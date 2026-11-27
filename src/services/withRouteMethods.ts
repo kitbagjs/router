@@ -1,11 +1,12 @@
 import { RouteSetTitle, SetRouteTitle } from '@/types/routeTitle'
-import { InternalRouteHooks } from '@/types/hooks'
+import { InternalRouteHooks, getHooks, AddRejectionHook } from '@/types/hooks'
 import { addRedirect } from '@/services/addRedirect'
 import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { AddAlias, createAliases } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toNamedLoader } from '@/services/addLoader'
 import { AddView, addViewToMatch, toView } from '@/services/addView'
 import { CreatedRouteOptions, isRoute, Route } from '@/types/route'
+import { registerHook } from '@/services/registerHook'
 import { combineContext } from '@/services/combineContext'
 
 type NextMatch = (match: CreatedRouteOptions) => CreatedRouteOptions
@@ -120,7 +121,31 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     return result
   }
 
-  const result = {
+  let result: TRoute
+
+  if (route.kind === 'rejection') {
+    const onRejection: AddRejectionHook = (hook, options) => {
+      const [store] = getHooks(route)
+
+      return registerHook(store.onRejection, hook, options)
+    }
+
+    result = {
+      ...route,
+      setTitle,
+      onRejection,
+      onBeforeRouteEnter,
+      onBeforeRouteUpdate,
+      onBeforeRouteLeave,
+      onAfterRouteEnter,
+      onAfterRouteUpdate,
+      onAfterRouteLeave,
+    }
+
+    return result
+  }
+
+  result = {
     ...route,
     addView,
     addLoader,

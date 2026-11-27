@@ -52,7 +52,7 @@ test('loader context registers navigation targets and rejections through chained
 
   await router.start()
   await vi.waitFor(() => expect(onRejection).toHaveBeenCalledWith('Denied', expect.anything()))
-  expect(router.route.name).toBe('target')
+  expect(router.route.name).toBe('Denied')
 })
 
 test('adding a loader preserves context targets available to route callbacks', async () => {
