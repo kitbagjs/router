@@ -16,7 +16,7 @@
   ],
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.plugin.config.ts",
     "prepublishOnly": "npm run build",
     "build:watch": "vite build --watch --minify=false",
     "dev": "vite build --watch --minify=false",
@@ -30,7 +30,11 @@
     "docs:generate": "vite build && typedoc && sleep 5 && node ./scripts/api.js"
   },
   "type": "module",
+  "bin": {
+    "router": "./bin/router.mjs"
+  },
   "files": [
+    "bin",
     "dist"
   ],
   "main": "./dist/kitbag-router.umd.cjs",
@@ -40,6 +44,11 @@
     ".": {
       "import": "./dist/kitbag-router.js",
       "require": "./dist/kitbag-router.umd.cjs"
+    },
+    "./vite": {
+      "types": "./dist/vite/index.d.ts",
+      "import": "./dist/plugin/vite.js",
+      "require": "./dist/plugin/vite.cjs"
     }
   },
   "devDependencies": {
@@ -66,7 +75,8 @@
     "zod": "4.0.0"
   },
   "peerDependencies": {
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
@@ -76,5 +86,10 @@
     "fast-glob": "^3.3.3",
     "magic-string": "^0.30.21",
     "ts-morph": "^28.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
   }
 }
