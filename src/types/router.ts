@@ -35,6 +35,12 @@ export type RouterOptions = TransformerOptions & {
   ssr?: boolean,
 
   /**
+   * Marks the router as hydrating markup the server rendered. Use with an app created with
+   * `createSSRApp`. Ignored when `ssr` is set.
+   */
+  hydrate?: boolean,
+
+  /**
    * Specifies the history mode for the router, such as "browser", "memory", or "hash".
    *
    * @default "auto"

@@ -256,3 +256,39 @@ test.each([
   expect(wrapper.text()).toBe('from server')
   expect(load).not.toHaveBeenCalled()
 })
+
+test('a hydrating router without a payload commits the initial route synchronously and warns', async () => {
+  vi.stubEnv('NODE_ENV', 'development')
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  document.body.innerHTML = ''
+
+  const beforeEnter = vi.fn()
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([home], { initialUrl: '/', hydrate: true })
+
+  router.onBeforeRouteEnter(beforeEnter)
+
+  const ready = router.start()
+
+  expect(router.route.name).toBe('home')
+  expect(router.started.value).toBe(true)
+
+  await ready
+
+  expect(beforeEnter).not.toHaveBeenCalled()
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('no router payload was found'))
+})
+
+test('hydrate is ignored by a rendering router', async () => {
+  document.body.innerHTML = ''
+
+  const beforeEnter = vi.fn()
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([home], { initialUrl: '/', ssr: true, hydrate: true })
+
+  router.onBeforeRouteEnter(beforeEnter)
+
+  await router.render()
+
+  expect(beforeEnter).toHaveBeenCalledOnce()
+})

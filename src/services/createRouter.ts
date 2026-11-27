@@ -15,6 +15,7 @@ import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRo
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
+import { warnMissingPayload } from '@/utilities/warnMissingPayload'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
@@ -157,6 +158,7 @@ export function createRouter<
   const redirectStatus = options?.redirectStatus ?? 302
   const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
+  const isHydrating = !isSSR && (options?.hydrate ?? false)
   const routerNavigation = options?.navigation
   const routerViewTransition = options?.viewTransition
   const activity = createActivityTracker()
@@ -730,10 +732,14 @@ export function createRouter<
   async function initialize(): Promise<void> {
     const payload = getHydratingPayload()
 
+    if (isHydrating && !payload) {
+      warnMissingPayload()
+    }
+
     if (payload) {
       await hydrate(payload)
     } else {
-      await set(initialUrl, { replace: true, state: initialState })
+      await set(initialUrl, { replace: true, state: initialState, hydrating: isHydrating })
     }
 
     // stop() can run while navigation or hydration is awaited.

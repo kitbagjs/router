@@ -76,6 +76,23 @@ A router created in the browser adopts a payload it finds: the route or rejectio
 before anything renders, props getters and loaders are given the values the server settled on in
 place of running, and before hooks are not re-run.
 
+Create the browser router with the `hydrate` option and the app with `createSSRApp`:
+
+```ts
+import { createSSRApp } from 'vue'
+import { createRouter } from '@kitbag/router'
+import App from './App.vue'
+import { routes } from './routes'
+
+const router = createRouter(routes, {
+  hydrate: true,
+})
+const app = createSSRApp(App)
+
+app.use(router)
+app.mount('#app')
+```
+
 A rendering router never runs after hooks: the response returns what the navigation committed and
 nothing after that. Client side effects like analytics belong in after hooks — they run once, in
 the browser, whether the navigation was live or hydrated.
