@@ -7,9 +7,10 @@ export type RouterInternal = {
   [IS_ROUTER_SYMBOL]: true,
   addContext: (context: readonly RouteContext[]) => void,
   /**
-   * Called by router aware components that are hydrating server rendered markup.
+   * Commits the initial route synchronously for markup that is hydrating without a payload, and warns
+   * that the payload is missing. Only the first call does anything.
    */
-  onHydrate: () => void,
+  hydrate: () => void,
 }
 
 export function isRouter(value: unknown): value is Router & RouterInternal {

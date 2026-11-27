@@ -682,7 +682,7 @@ export function createRouter<
    * Adopts the outcome the server rendered for the initial url, committed synchronously so the first
    * paint matches the markup already in the dom.
    */
-  async function hydrate(payload: RouterPayload): Promise<void> {
+  async function hydratePayload(payload: RouterPayload): Promise<void> {
     const to = find(initialUrl, { state: initialState ?? undefined }) ?? null
 
     if (!to) {
@@ -718,11 +718,12 @@ export function createRouter<
   let hasHydrated = false
 
   /**
-   * Called when the app hydrates server rendered markup, which means it was created with `createSSRApp`.
-   * Without a payload the initial url is still committed synchronously, so hydration renders what the
-   * server rendered instead of mismatching while the initial navigation is under way.
+   * Called when markup is hydrating, which means the app was created with `createSSRApp`. A payload is
+   * adopted as soon as the router starts, so this only matters without one: the initial url is committed
+   * synchronously so hydration renders what the server rendered instead of mismatching while the initial
+   * navigation is under way. Only the first call does anything.
    */
-  function onHydrate(): void {
+  function hydrate(): void {
     if (hasHydrated) {
       return
     }
@@ -759,7 +760,7 @@ export function createRouter<
     const payload = getHydratingPayload()
 
     if (payload) {
-      await hydrate(payload)
+      await hydratePayload(payload)
     } else {
       await set(initialUrl, { replace: true, state: initialState })
     }
@@ -868,7 +869,7 @@ export function createRouter<
   const internal = {
     [IS_ROUTER_SYMBOL]: true,
     addContext,
-    onHydrate,
+    hydrate,
   } satisfies RouterInternal
 
   const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {

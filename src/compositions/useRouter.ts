@@ -1,6 +1,7 @@
 import { InjectionKey, inject } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { Router } from '@/types/router'
+import { useHydrationDetection } from '@/compositions/useHydrationDetection'
 
 export function createUseRouter<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => TRouter {
   return () => {
@@ -9,6 +10,8 @@ export function createUseRouter<TRouter extends Router>(routerKey: InjectionKey<
     if (!router) {
       throw new RouterNotInstalledError()
     }
+
+    useHydrationDetection(router)
 
     return router
   }
