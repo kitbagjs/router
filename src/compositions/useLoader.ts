@@ -6,6 +6,7 @@ import { Router } from '@/types/router'
 import { isRouter } from '@/types/routerInternal'
 import { DataResult } from '@/services/createDataStore'
 import { createUseRouter } from '@/compositions/useRouter'
+import { useHydrationDetection } from '@/compositions/useHydrationDetection'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { getLoaderLocation } from '@/services/getLoaderLocation'
@@ -42,6 +43,8 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     if (!isRouter(router)) {
       throw new TypeError('Expected a router created by createRouter')
     }
+
+    useHydrationDetection(router)
 
     const navigation = useRouterNavigation()
     const isServerRendering = useIsServerRendering()

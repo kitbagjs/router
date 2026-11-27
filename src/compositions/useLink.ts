@@ -2,6 +2,7 @@ import { InjectionKey, MaybeRefOrGetter, computed, toValue } from 'vue'
 import { createUsePrefetching } from '@/compositions/usePrefetching'
 import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseRouter } from '@/compositions/useRouter'
+import { useHydrationDetection } from '@/compositions/useHydrationDetection'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { hasRouteChanges } from '@/utilities/hasRouteChanges'
@@ -45,6 +46,8 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
   ) => {
     const router = useRouter()
     const viewTransition = useViewTransition()
+
+    useHydrationDetection(router)
 
     const linkOptions = computed<UseLinkOptions>(() => {
       const sourceValue = toValue(source)

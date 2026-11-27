@@ -1,6 +1,7 @@
 /* eslint-disable vue/one-component-per-file */
 import { defineComponent, h, InjectionKey, onErrorCaptured, onScopeDispose, PropType, provide, renderSlot, shallowRef, SlotsType, Suspense, VNode, watch } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
+import { useHydrationDetection } from '@/compositions/useHydrationDetection'
 import { createUseRejection } from '@/compositions/useRejection'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { isRouterRoute } from '@/services/createRouterRoute'
@@ -71,6 +72,9 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
     slots: Object as SlotsType<RouterSuspenseSlots>,
     setup(props, { attrs, slots }) {
       const router = useRouter()
+
+      useHydrationDetection(router)
+
       const route = router.route
       const rejection = useRejection()
       const isServerRendering = useIsServerRendering()

@@ -1,5 +1,6 @@
 import { InjectionKey, watch } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
+import { useHydrationDetection } from '@/compositions/useHydrationDetection'
 import { UseRouteInvalidError } from '@/errors/useRouteInvalidError'
 import { IsRouteOptions, createIsRoute, RouteWithMatch } from '@/guards/routes'
 import { Router, RouterRouteName } from '@/types/router'
@@ -22,6 +23,8 @@ export function createUseRoute(routerKey: InjectionKey<Router>): (routeName?: st
 
   return (routeName?: string, options?: IsRouteOptions): RouterRoute => {
     const router = useRouter()
+
+    useHydrationDetection(router)
 
     function checkRouteNameIsValid(): void {
       if (!routeName) {

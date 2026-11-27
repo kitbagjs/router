@@ -1,8 +1,6 @@
 import { InjectionKey, inject } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { Router } from '@/types/router'
-import { isRouter } from '@/types/routerInternal'
-import { isHydrating } from '@/utilities/isHydrating'
 
 export function createUseRouter<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => TRouter {
   return () => {
@@ -10,10 +8,6 @@ export function createUseRouter<TRouter extends Router>(routerKey: InjectionKey<
 
     if (!router) {
       throw new RouterNotInstalledError()
-    }
-
-    if (isRouter(router) && isHydrating()) {
-      router.onHydrate()
     }
 
     return router
