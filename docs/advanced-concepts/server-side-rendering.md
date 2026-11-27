@@ -76,6 +76,10 @@ A router created in the browser adopts a payload it finds: the route or rejectio
 before anything renders, props getters and loaders are given the values the server settled on in
 place of running, and before hooks are not re-run.
 
+An app created with `createSSRApp` hydrates even when the payload is missing: the router commits the
+initial route as the markup hydrates, so the first render still matches the server. Props getters and
+loaders run again on the client, and the router warns in development that the payload was not found.
+
 A rendering router never runs after hooks: the response returns what the navigation committed and
 nothing after that. Client side effects like analytics belong in after hooks — they run once, in
 the browser, whether the navigation was live or hydrated.

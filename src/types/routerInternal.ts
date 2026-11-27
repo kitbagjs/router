@@ -6,6 +6,10 @@ export const IS_ROUTER_SYMBOL = Symbol('IS_ROUTER_SYMBOL')
 export type RouterInternal = {
   [IS_ROUTER_SYMBOL]: true,
   addContext: (context: readonly RouteContext[]) => void,
+  /**
+   * Called by router aware components that are hydrating server rendered markup.
+   */
+  onHydrate: () => void,
 }
 
 export function isRouter(value: unknown): value is Router & RouterInternal {

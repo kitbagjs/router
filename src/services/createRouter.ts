@@ -15,6 +15,7 @@ import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRo
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
+import { warnMissingPayload } from '@/utilities/warnMissingPayload'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
@@ -714,6 +715,33 @@ export function createRouter<
     }
   }
 
+  let hasHydrated = false
+
+  /**
+   * Called when the app hydrates server rendered markup, which means it was created with `createSSRApp`.
+   * Without a payload the initial url is still committed synchronously, so hydration renders what the
+   * server rendered instead of mismatching while the initial navigation is under way.
+   */
+  function onHydrate(): void {
+    if (hasHydrated) {
+      return
+    }
+
+    hasHydrated = true
+
+    if (getHydratingPayload()) {
+      return
+    }
+
+    warnMissingPayload()
+
+    if (started.value) {
+      return
+    }
+
+    set(initialUrl, { replace: true, state: initialState, hydrating: true })
+  }
+
   function start(): Promise<void> {
     if (stopped) {
       return Promise.resolve()
@@ -840,6 +868,7 @@ export function createRouter<
   const internal = {
     [IS_ROUTER_SYMBOL]: true,
     addContext,
+    onHydrate,
   } satisfies RouterInternal
 
   const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {

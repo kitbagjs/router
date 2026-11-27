@@ -1,15 +1,24 @@
+/* eslint-disable vue/one-component-per-file */
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { getDataKey } from '@/services/getDataKey'
-import { expect, onTestFinished, test, vi } from 'vitest'
+import { afterEach, expect, Mock, onTestFinished, test, vi } from 'vitest'
 import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { payloadToScript, RouterPayload } from '@/services/payload'
 import { withParams } from '@/services/withParams'
 import { createRejection } from '@/services/createRejection'
 import { z } from 'zod'
-import { mount } from '@vue/test-utils'
-import { defineComponent, h } from 'vue'
+import { flushPromises, mount } from '@vue/test-utils'
+import { createApp, createSSRApp, defineComponent, h } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import { useLoader } from '@/main'
+import { warnMissingPayload } from '@/utilities/warnMissingPayload'
+
+vi.mock('@/utilities/warnMissingPayload', () => ({ warnMissingPayload: vi.fn() }))
+
+afterEach(() => {
+  vi.mocked(warnMissingPayload).mockClear()
+})
 
 function getServerKey(): string {
   const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
@@ -255,4 +264,92 @@ test.each([
 
   expect(wrapper.text()).toBe('from server')
   expect(load).not.toHaveBeenCalled()
+})
+
+const app = defineComponent({
+  template: '<main><RouterLink to="/">Home</RouterLink><RouterView /></main>',
+})
+
+const hello = createRoute({ name: 'home', path: '/' }).addView({ template: '<h1>Hello</h1>' })
+
+async function renderOnServer(): Promise<{ html: string, payload: string }> {
+  const server = createRouter([hello], { ssr: true, initialUrl: '/' })
+  const serverApp = createSSRApp(app)
+  onTestFinished(() => server.stop())
+
+  serverApp.use(server)
+
+  const rendered = await server.render()
+
+  if (rendered.kind !== 'success') {
+    throw new Error('Expected a successful server render')
+  }
+
+  return { html: await renderToString(serverApp), payload: rendered.payload }
+}
+
+function mountOnClient(createClientApp: typeof createApp, html: string): { container: HTMLElement, onBeforeRouteEnter: Mock } {
+  const container = document.createElement('div')
+  const onBeforeRouteEnter = vi.fn(async () => {})
+  const client = createRouter([hello], { initialUrl: '/' })
+  const clientApp = createClientApp(app)
+
+  container.innerHTML = html
+  document.body.appendChild(container)
+  client.onBeforeRouteEnter(onBeforeRouteEnter)
+  clientApp.use(client)
+  clientApp.mount(container)
+
+  onTestFinished(() => {
+    clientApp.unmount()
+    container.remove()
+  })
+
+  return { container, onBeforeRouteEnter }
+}
+
+test('createSSRApp without a payload hydrates the initial route and warns', async () => {
+  const { html } = await renderOnServer()
+  document.body.innerHTML = ''
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+  const { container, onBeforeRouteEnter } = mountOnClient(createSSRApp, html)
+
+  expect(container.querySelector('h1')?.textContent).toBe('Hello')
+  expect(container.innerHTML).toBe(html)
+  expect(warnMissingPayload).toHaveBeenCalledOnce()
+  expect(onBeforeRouteEnter).toHaveBeenCalledOnce()
+  expect(warn).not.toHaveBeenCalled()
+  expect(error).not.toHaveBeenCalled()
+})
+
+test('createSSRApp with a payload hydrates without warning', async () => {
+  const { html, payload } = await renderOnServer()
+  document.body.innerHTML = payload
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+  const { container, onBeforeRouteEnter } = mountOnClient(createSSRApp, html)
+
+  expect(container.querySelector('h1')?.textContent).toBe('Hello')
+  expect(container.innerHTML).toBe(html)
+  expect(warnMissingPayload).not.toHaveBeenCalled()
+  expect(onBeforeRouteEnter).not.toHaveBeenCalled()
+  expect(warn).not.toHaveBeenCalled()
+  expect(error).not.toHaveBeenCalled()
+})
+
+test('createApp without a payload renders after the initial navigation', async () => {
+  document.body.innerHTML = ''
+
+  const { container, onBeforeRouteEnter } = mountOnClient(createApp, '')
+
+  expect(container.querySelector('h1')).toBeNull()
+
+  await flushPromises()
+
+  expect(container.querySelector('h1')?.textContent).toBe('Hello')
+  expect(onBeforeRouteEnter).toHaveBeenCalledOnce()
+  expect(warnMissingPayload).not.toHaveBeenCalled()
 })
