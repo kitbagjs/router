@@ -396,6 +396,10 @@
         "link": "/api/types/ErrorHookContext.md"
       },
       {
+        "text": "ErrorHookSource",
+        "link": "/api/types/ErrorHookSource.md"
+      },
+      {
         "text": "GetAllParams",
         "link": "/api/types/GetAllParams.md"
       },

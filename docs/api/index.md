@@ -112,6 +112,7 @@
 - [DataRecord](types/DataRecord.md)
 - [ErrorHook](types/ErrorHook.md)
 - [ErrorHookContext](types/ErrorHookContext.md)
+- [ErrorHookSource](types/ErrorHookSource.md)
 - [GetAllParams](types/GetAllParams.md)
 - [GetData](types/GetData.md)
 - [GetParam](types/GetParam.md)
