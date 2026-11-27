@@ -158,6 +158,7 @@ export function createRouter<
   const redirectStatus = options?.redirectStatus ?? 302
   const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
+  const isHydrating = !isSSR && (options?.hydrate ?? false)
   const routerNavigation = options?.navigation
   const routerViewTransition = options?.viewTransition
   const activity = createActivityTracker()
@@ -682,7 +683,7 @@ export function createRouter<
    * Adopts the outcome the server rendered for the initial url, committed synchronously so the first
    * paint matches the markup already in the dom.
    */
-  async function hydratePayload(payload: RouterPayload): Promise<void> {
+  async function hydrate(payload: RouterPayload): Promise<void> {
     const to = find(initialUrl, { state: initialState ?? undefined }) ?? null
 
     if (!to) {
@@ -715,32 +716,24 @@ export function createRouter<
     }
   }
 
-  let hasHydrated = false
-
   /**
-   * Called when markup is hydrating, which means the app was created with `createSSRApp`. A payload is
-   * adopted as soon as the router starts, so this only matters without one: the initial url is committed
-   * synchronously so hydration renders what the server rendered instead of mismatching while the initial
-   * navigation is under way. Only the first call does anything.
+   * Adopts the payload when there is one. A hydrating router without one still commits the initial url
+   * synchronously, so the markup hydrates against the route the server rendered.
    */
-  function hydrate(): void {
-    if (hasHydrated) {
-      return
+  function navigateToInitialUrl(): Promise<void> {
+    const payload = getHydratingPayload()
+
+    if (payload) {
+      return hydrate(payload)
     }
 
-    hasHydrated = true
+    if (isHydrating) {
+      warnMissingPayload()
 
-    if (getHydratingPayload()) {
-      return
+      return set(initialUrl, { replace: true, state: initialState, hydrating: true })
     }
 
-    warnMissingPayload()
-
-    if (started.value) {
-      return
-    }
-
-    set(initialUrl, { replace: true, state: initialState, hydrating: true })
+    return set(initialUrl, { replace: true, state: initialState })
   }
 
   function start(): Promise<void> {
@@ -757,13 +750,7 @@ export function createRouter<
   }
 
   async function initialize(): Promise<void> {
-    const payload = getHydratingPayload()
-
-    if (payload) {
-      await hydratePayload(payload)
-    } else {
-      await set(initialUrl, { replace: true, state: initialState })
-    }
+    await navigateToInitialUrl()
 
     // stop() can run while navigation or hydration is awaited.
     if (stopped) {
@@ -869,7 +856,6 @@ export function createRouter<
   const internal = {
     [IS_ROUTER_SYMBOL]: true,
     addContext,
-    hydrate,
   } satisfies RouterInternal
 
   const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {

@@ -288,10 +288,21 @@ async function renderOnServer(): Promise<{ html: string, payload: string }> {
   return { html: await renderToString(serverApp), payload: rendered.payload }
 }
 
-function mountOnClient(createClientApp: typeof createApp, html: string): { container: HTMLElement, onBeforeRouteEnter: Mock } {
+type MountOnClientOptions = {
+  createClientApp: typeof createApp,
+  html: string,
+  hydrate?: boolean,
+}
+
+type MountOnClientResult = {
+  container: HTMLElement,
+  onBeforeRouteEnter: Mock,
+}
+
+function mountOnClient({ createClientApp, html, hydrate }: MountOnClientOptions): MountOnClientResult {
   const container = document.createElement('div')
   const onBeforeRouteEnter = vi.fn(async () => {})
-  const client = createRouter([hello], { initialUrl: '/' })
+  const client = createRouter([hello], { initialUrl: '/', hydrate })
   const clientApp = createClientApp(app)
 
   container.innerHTML = html
@@ -308,29 +319,29 @@ function mountOnClient(createClientApp: typeof createApp, html: string): { conta
   return { container, onBeforeRouteEnter }
 }
 
-test('createSSRApp without a payload hydrates the initial route and warns', async () => {
+test('hydrate without a payload commits the initial route and warns', async () => {
   const { html } = await renderOnServer()
   document.body.innerHTML = ''
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-  const { container, onBeforeRouteEnter } = mountOnClient(createSSRApp, html)
+  const { container, onBeforeRouteEnter } = mountOnClient({ createClientApp: createSSRApp, html, hydrate: true })
 
   expect(container.querySelector('h1')?.textContent).toBe('Hello')
   expect(container.innerHTML).toBe(html)
   expect(warnMissingPayload).toHaveBeenCalledOnce()
-  expect(onBeforeRouteEnter).toHaveBeenCalledOnce()
+  expect(onBeforeRouteEnter).not.toHaveBeenCalled()
   expect(warn).not.toHaveBeenCalled()
   expect(error).not.toHaveBeenCalled()
 })
 
-test('createSSRApp with a payload hydrates without warning', async () => {
+test('hydrate with a payload adopts it without warning', async () => {
   const { html, payload } = await renderOnServer()
   document.body.innerHTML = payload
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-  const { container, onBeforeRouteEnter } = mountOnClient(createSSRApp, html)
+  const { container, onBeforeRouteEnter } = mountOnClient({ createClientApp: createSSRApp, html, hydrate: true })
 
   expect(container.querySelector('h1')?.textContent).toBe('Hello')
   expect(container.innerHTML).toBe(html)
@@ -340,10 +351,10 @@ test('createSSRApp with a payload hydrates without warning', async () => {
   expect(error).not.toHaveBeenCalled()
 })
 
-test('createApp without a payload renders after the initial navigation', async () => {
+test('without hydrate the initial route renders after the initial navigation', async () => {
   document.body.innerHTML = ''
 
-  const { container, onBeforeRouteEnter } = mountOnClient(createApp, '')
+  const { container, onBeforeRouteEnter } = mountOnClient({ createClientApp: createApp, html: '' })
 
   expect(container.querySelector('h1')).toBeNull()
 

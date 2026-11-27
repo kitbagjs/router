@@ -35,6 +35,13 @@ export type RouterOptions = TransformerOptions & {
   ssr?: boolean,
 
   /**
+   * Marks the router as hydrating markup the server rendered, for an app created with `createSSRApp`.
+   * Without a payload the initial route is still committed before anything renders, so hydration
+   * matches the server, and the router warns that the payload is missing. Ignored when `ssr` is set.
+   */
+  hydrate?: boolean,
+
+  /**
    * Specifies the history mode for the router, such as "browser", "memory", or "hash".
    *
    * @default "auto"

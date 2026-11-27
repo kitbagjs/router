@@ -71,7 +71,6 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
     slots: Object as SlotsType<RouterSuspenseSlots>,
     setup(props, { attrs, slots }) {
       const router = useRouter()
-
       const route = router.route
       const rejection = useRejection()
       const isServerRendering = useIsServerRendering()
