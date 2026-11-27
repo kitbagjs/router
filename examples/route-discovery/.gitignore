@@ -1,0 +1,3 @@
+*.generated.ts
+**/*.generated.ts
+dist
