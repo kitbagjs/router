@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
-    "@vue/devtools-api": "^8.2.1"
+    "@vue/devtools-api": "^8.2.1",
+    "zhead": "^2.2.4"
   }
 }
