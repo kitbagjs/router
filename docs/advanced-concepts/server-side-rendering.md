@@ -76,10 +76,7 @@ A router created in the browser adopts a payload it finds: the route or rejectio
 before anything renders, props getters and loaders are given the values the server settled on in
 place of running, and before hooks are not re-run.
 
-Create the browser router with the `hydrate` option when the app is created with `createSSRApp`. If
-the payload is missing, the router still commits the initial route before anything renders, so the
-first render matches the server. Before hooks are not run, props getters and loaders run again on the
-client, and the router warns in development that the payload was not found:
+Create the browser router with the `hydrate` option and the app with `createSSRApp`:
 
 ```ts
 import { createSSRApp } from 'vue'
