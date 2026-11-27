@@ -716,26 +716,6 @@ export function createRouter<
     }
   }
 
-  /**
-   * Adopts the payload when there is one. A hydrating router without one still commits the initial url
-   * synchronously, so the markup hydrates against the route the server rendered.
-   */
-  function navigateToInitialUrl(): Promise<void> {
-    const payload = getHydratingPayload()
-
-    if (payload) {
-      return hydrate(payload)
-    }
-
-    if (isHydrating) {
-      warnMissingPayload()
-
-      return set(initialUrl, { replace: true, state: initialState, hydrating: true })
-    }
-
-    return set(initialUrl, { replace: true, state: initialState })
-  }
-
   function start(): Promise<void> {
     if (stopped) {
       return Promise.resolve()
@@ -750,7 +730,17 @@ export function createRouter<
   }
 
   async function initialize(): Promise<void> {
-    await navigateToInitialUrl()
+    const payload = getHydratingPayload()
+
+    if (isHydrating && !payload) {
+      warnMissingPayload()
+    }
+
+    if (payload) {
+      await hydrate(payload)
+    } else {
+      await set(initialUrl, { replace: true, state: initialState, hydrating: isHydrating })
+    }
 
     // stop() can run while navigation or hydration is awaited.
     if (stopped) {
