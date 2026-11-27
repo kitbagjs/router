@@ -1,3 +1,4 @@
+import { ResolvedTags } from '@/types/tags'
 import { Route, RouteLoadersOf } from '@/types/route'
 import { GetData, LoadersDataReturnType } from '@/types/routeLoaders'
 import { GetProps, ViewsPropsReturnType } from '@/types/routeViews'
@@ -7,6 +8,7 @@ type GenericParent = {
   name: string,
   getData: GetData,
   getProps: GetProps,
+  getTags: () => Promise<ResolvedTags>,
   /** @deprecated Use parent.getProps() or parent.getProps(name). */
   props: unknown,
   /** @deprecated Use parent.getData() or parent.getData(name). */
@@ -22,6 +24,7 @@ export type PropsCallbackParent<
         name: TParent['name'],
         getData: GetData<RouteLoadersOf<TParent['matches']>>,
         getProps: GetParentPropsGetter<TParent>,
+        getTags: () => Promise<ResolvedTags>,
         /** @deprecated Use parent.getProps() or parent.getProps(name). */
         props: GetParentPropsReturnType<TParent>,
         /** @deprecated Use parent.getData() or parent.getData(name). */

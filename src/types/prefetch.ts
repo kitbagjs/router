@@ -21,6 +21,11 @@ export type PrefetchConfigOptions = {
    * @default false
    */
   loaders?: boolean | PrefetchStrategy,
+  /**
+   * When true route tags will be prefetched.
+   * @default false
+   */
+  tags?: boolean | PrefetchStrategy,
 }
 
 /**

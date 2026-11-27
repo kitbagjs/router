@@ -7,6 +7,7 @@ const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
   components: true,
   props: false,
   loaders: false,
+  tags: false,
 }
 
 function isPrefetchStrategy(value: any): value is PrefetchStrategy {

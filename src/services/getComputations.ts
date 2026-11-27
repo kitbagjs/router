@@ -3,6 +3,7 @@ import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { createPropsComputation } from '@/services/createPropsComputation'
 import { createLoaderComputation } from '@/services/createLoaderComputation'
+import { createTagsComputation } from '@/services/createTagsComputation'
 import { getPrefetchOption } from '@/utilities/prefetch'
 
 export function getComputations(route: ResolvedRoute): Computation[] {
@@ -32,6 +33,15 @@ export function getComputations(route: ResolvedRoute): Computation[] {
         routePrefetch: match.prefetch,
         prefetch,
         transformer,
+      }))
+    }
+
+    if (match.tags) {
+      computations.push(createTagsComputation({
+        location: { kind: 'tags', depth, name: 'tags' },
+        route,
+        callback: match.tags,
+        routePrefetch: match.prefetch,
       }))
     }
   }

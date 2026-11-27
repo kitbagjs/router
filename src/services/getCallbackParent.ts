@@ -3,6 +3,10 @@ import { DEFAULT_VIEW_NAME } from '@/services/routeViews'
 import { DEFAULT_LOADER_NAME } from '@/services/addLoader'
 import { loaderLocations } from '@/services/loaderLocations'
 import { propsLocations } from '@/services/propsLocations'
+import { tagsLocations } from '@/services/tagsLocations'
+import { mergeTags } from '@/utilities/mergeTags'
+import { TagLayer, ResolvedTags } from '@/types/tags'
+import { toResolvedTags } from '@/utilities/toResolvedTags'
 import { PropsCallbackParent } from '@/types/props'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteView } from '@/types/routeViews'
@@ -42,7 +46,16 @@ export function getCallbackParent(depth: number, { to: route, getValue }: GetCal
     return getValue({ kind: 'props', depth: depth - 1, name })
   }
 
+  async function getTags(): Promise<ResolvedTags> {
+    const locations = route.matches.slice(0, depth).flatMap(tagsLocations)
+    const layers = await Promise.all(locations.map((location) => getValue(location))) as TagLayer[]
+    const groups = mergeTags(layers)
+
+    return toResolvedTags(groups)
+  }
+
   return {
+    getTags,
     name: parentName,
     getData,
     getProps,

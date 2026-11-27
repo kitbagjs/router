@@ -7,6 +7,7 @@ import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toNamedLoader } fr
 import { AddView, addViewToMatch, toView } from '@/services/addView'
 import { CreatedRouteOptions, isRoute, Route } from '@/types/route'
 import { combineContext } from '@/services/combineContext'
+import { SetRouteTags } from '@/types/routeTags'
 
 type NextMatch = (match: CreatedRouteOptions) => CreatedRouteOptions
 
@@ -84,6 +85,18 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     return result
   }
 
+  const setTags: SetRouteTags<Route, TRoute> = (callback) => {
+    const match = route.matches.at(-1)
+
+    if (!match) {
+      throw new Error('Expected the route to have at least one match')
+    }
+
+    match.tags = callback
+
+    return result
+  }
+
   const onBeforeRouteEnter: HookMethods['onBeforeRouteEnter'] = (hook, options) => {
     hooks.onBeforeRouteEnter(hook, options)
 
@@ -128,6 +141,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     redirectTo,
     redirectFrom,
     setTitle,
+    setTags,
     onBeforeRouteEnter,
     onBeforeRouteUpdate,
     onBeforeRouteLeave,

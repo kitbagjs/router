@@ -13,6 +13,7 @@ import { RouteRedirect } from './redirects'
 import { RouteViews } from '@/types/routeViews'
 import { LoadersDataReturnType, RouteLoaders } from '@/types/routeLoaders'
 import { RouteAlias } from '@/types/routeAlias'
+import { SetRouteTagsCallback } from '@/types/routeTags'
 
 export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
 
@@ -42,6 +43,7 @@ export type CreatedRouteOptions = CreateRouteOptions & {
   id: string,
   views: RouteViews,
   loaders: RouteLoaders,
+  tags?: SetRouteTagsCallback,
 }
 
 // `matches` is a complete per-depth snapshot of the options each route was created with, so the
