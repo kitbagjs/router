@@ -33,11 +33,14 @@ export type RejectionInternal = {
  */
 export type Rejections = readonly Rejection[]
 
-export type RejectionOptions<TType extends string = string> = {
+export type RejectionNameOptions<TName extends string = string> = { name: TName } | {
   /**
-   * The type of rejection.
+   * @deprecated Use name instead.
    */
-  type: TType,
+  type: TName,
+}
+
+export type RejectionOptions<TName extends string = string> = RejectionNameOptions<TName> & {
   /**
    * The component rendered while this rejection is in effect.
    */
@@ -50,7 +53,13 @@ export type RejectionOptions<TType extends string = string> = {
   status?: number,
 }
 
-export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'> & {
+export type Rejection<TName extends string = string> = {
+  name: TName,
+  /**
+   * @deprecated Use name instead.
+   */
+  type: TName,
+  status?: number,
   /**
    * Returns the title of the rejection from its `setTitle` callback.
    */
@@ -64,8 +73,8 @@ export type RejectionType<TRejections extends Rejections | undefined> = unknown 
     : undefined extends TRejections
       ? string
       : TRejections extends Rejections
-        ? TRejections[number]['type']
+        ? TRejections[number]['name']
         : never
 
 export type ExtractRejections<T> = T extends { rejections: infer TRejections extends Rejections } ? TRejections : []
-export type ExtractRejectionTypes<T extends Rejections> = T[number]['type'] extends string ? T[number]['type'] : never
+export type ExtractRejectionTypes<T extends Rejections> = T[number]['name'] extends string ? T[number]['name'] : never

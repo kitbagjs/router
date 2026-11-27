@@ -15,7 +15,7 @@ const login = createRoute({
   name: 'login',
   path: '/login',
 })
-const denied = createRejection({ type: 'Denied' })
+const denied = createRejection({ name: 'Denied' })
 
 const checkout = createRoute({
   name: 'checkout',

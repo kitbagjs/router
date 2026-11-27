@@ -90,7 +90,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
         }
 
         if (isRejection(target)) {
-          pendingRejections.set(target.type, target)
+          pendingRejections.set(target.name, target)
         }
       }
     }

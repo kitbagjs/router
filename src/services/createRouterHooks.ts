@@ -237,7 +237,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     for (const { hook, remove } of allHooks) {
       const callback = toHookCallback(hook)
-      callback(rejection.type, { to, from, remove })
+      callback(rejection.name, { to, from, remove })
     }
   }
 

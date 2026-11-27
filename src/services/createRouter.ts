@@ -774,9 +774,9 @@ export function createRouter<
       return {
         kind: 'reject',
         status: rejection.status ?? rejectStatus,
-        rejection: rejection.type,
+        rejection: rejection.name,
         title,
-        payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type }),
+        payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.name }),
       }
     }
 
