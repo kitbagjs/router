@@ -1,6 +1,9 @@
 import { createRoute, createRouter, createRouterAssets } from '@/main'
 import { expectTypeOf, test } from 'vitest'
 import { createRejection } from '@/services/createRejection'
+import echo from '@/components/echo'
+import { RouteView } from '@/types/routeViews'
+import { UrlString } from '@/types/urlString'
 
 test('status is optional', () => {
   createRejection({ type: 'Unauthorized', status: 401 })
@@ -23,8 +26,6 @@ test('rejection loaders retain inference and rejection capabilities', () => {
       return 'Denied'
     })
 
-  // @ts-expect-error rejection views are added in a separate feature
-  denied.addView({})
   expectTypeOf(denied.name).toEqualTypeOf<'Denied'>()
   denied.onBeforeRouteEnter((to, { abort }) => {
     expectTypeOf(to.kind).toEqualTypeOf<'rejection'>()
@@ -103,4 +104,37 @@ test('rejections have rejection kind', () => {
   const rejection = createRejection({ name: 'Denied' })
 
   expectTypeOf(rejection.kind).toEqualTypeOf<'rejection'>()
+})
+
+test('rejection views retain loader and prop inference through chaining', () => {
+  const denied = createRejection({ name: 'Denied', status: 403 })
+    .addLoader(() => 42, { name: 'reason' })
+    .addView(echo, {
+      props: async (to) => {
+        expectTypeOf(to.kind).toEqualTypeOf<'rejection'>()
+        expectTypeOf(to.name).toEqualTypeOf<'Denied'>()
+        expectTypeOf(await to.getData('reason')).toEqualTypeOf<number>()
+        return { value: String(await to.getData('reason')) }
+      },
+    })
+    .addView(echo, {
+      name: 'sidebar',
+      props: (to) => ({ value: to.href }),
+    })
+    .setTitle(() => 'Denied')
+
+  expectTypeOf(denied.matches[0].views).toEqualTypeOf<{
+    default: RouteView<Promise<{ value: string }>>,
+    sidebar: RouteView<{ value: UrlString }>,
+  }>()
+  expectTypeOf(denied.name).toEqualTypeOf<'Denied'>()
+  expectTypeOf(denied.onRejection).toBeFunction()
+  expectTypeOf(denied.addLoader).toBeFunction()
+
+  // @ts-expect-error required props still require a getter
+  createRejection({ name: 'Denied' }).addView(echo)
+  createRejection({ name: 'Denied' }).addView(echo, {
+    // @ts-expect-error the getter must satisfy the component props
+    props: () => ({ value: true }),
+  })
 })

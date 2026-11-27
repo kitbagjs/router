@@ -9,6 +9,7 @@ import { addViewToMatch, toView } from '@/services/addView'
 export function createRejection<const TOptions extends RejectionOptions>(options: TOptions): RejectionWithMethods<TOptions>
 
 export function createRejection(options: RejectionOptions): Route {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Support the legacy component option.
   const { component } = options
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- Support the legacy option.
   const name = 'name' in options ? options.name : options.type
