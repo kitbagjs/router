@@ -2,7 +2,7 @@
 import { expect, test, vi } from 'vitest'
 import { createSSRApp, defineComponent, h, inject, InjectionKey } from 'vue'
 import { renderToString } from 'vue/server-renderer'
-import { createLoader, createRoute, createRouter, RouterSuspense, useLoader } from '@/main'
+import { createLoader, createRoute, createRouter, RouterView, RouterSuspense, useLoader } from '@/main'
 
 test('unattached loader data is isolated between SSR apps', async () => {
   const userKey: InjectionKey<string> = Symbol('user')
@@ -11,13 +11,14 @@ test('unattached loader data is isolated between SSR apps', async () => {
 
   async function render(user: string): Promise<string> {
     const router = createRouter([route], { initialUrl: '/', ssr: true })
-    const app = createSSRApp(defineComponent({
+    const consumer = defineComponent({
       setup: async () => {
         const { data } = await useLoader(loader)
 
         return () => h('div', String(data.value))
       },
-    }))
+    })
+    const app = createSSRApp({ render: () => h(RouterView, null, { default: () => h(consumer) }) })
     app.provide(userKey, user)
     app.use(router)
 
@@ -28,7 +29,7 @@ test('unattached loader data is isolated between SSR apps', async () => {
     }
   }
 
-  expect(await Promise.all([render('first'), render('second')])).toEqual(['<div>first</div>', '<div>second</div>'])
+  expect(await Promise.all([render('first'), render('second')])).toEqual([expect.stringContaining('<div>first</div>'), expect.stringContaining('<div>second</div>')])
 })
 
 test('server-rendered fallback loaders warn that their data is absent from the payload', async () => {
@@ -37,17 +38,18 @@ test('server-rendered fallback loaders warn that their data is absent from the p
   const loader = createLoader({ load: () => 'loaded' })
   const route = createRoute({ name: 'home', path: '/' })
   const router = createRouter([route], { initialUrl: '/', ssr: true })
-  const app = createSSRApp(defineComponent({
+  const consumer = defineComponent({
     setup: async () => {
       const { data } = await useLoader(loader)
 
       return () => h('div', data.value)
     },
-  }))
+  })
+  const app = createSSRApp({ render: () => h(RouterView, null, { default: () => h(consumer) }) })
   app.use(router)
 
   try {
-    expect(await renderToString(app)).toBe('<div>loaded</div>')
+    expect(await renderToString(app)).toContain('<div>loaded</div>')
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('not included in the SSR payload. It will run again on the client.'), loader)
   } finally {
     router.stop()
@@ -72,7 +74,7 @@ test('forwards server loader failures without leaving rendering pending', async 
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const appErrorHandler = vi.fn()
   const app = createSSRApp({
-    render: () => h(RouterSuspense, null, { default: () => h(consumer), error: errorSlot }),
+    render: () => h(RouterSuspense, null, { default: () => h(RouterView, null, { default: () => h(consumer) }), error: errorSlot }),
   })
   app.config.errorHandler = appErrorHandler
   app.use(router)

@@ -1,3 +1,4 @@
+import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { ValueLocation } from '@/types/computation'
 import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
@@ -24,6 +25,7 @@ type LoaderSelection = { location: ValueLocation<'loader'>, navigation: RouterNa
 export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteContext[]>) => UseLoader<Awaited<TData>>
 
 export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunction {
+  const useRouterDepth = createUseRouterDepth(routerKey)
   const useRouter = createUseRouter(routerKey)
   const useRouterNavigation = createUseRouterNavigation(routerKey)
   const useAwaitedLoader = createUseAwaitedLoader(routerKey)
@@ -44,6 +46,12 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     const navigation = useRouterNavigation()
+    const depth = useRouterDepth() - 1
+
+    if (depth < 0) {
+      throw new Error('useLoader must be called inside a RouterView')
+    }
+
     const isServerRendering = useIsServerRendering()
     const route: ResolvedRoute = router.route
     const depth = useRouterDepth()

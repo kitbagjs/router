@@ -125,15 +125,16 @@ test('keeps waiting when replacement navigation is aborted', async () => {
   })
   const router = createRouter([route], { initialUrl: '/1' })
   await router.start()
-  const wrapper = mount(defineComponent({
+  const consumer = defineComponent({
     setup() {
       const result = useLoader(loader)
 
       return { getResult: () => result }
     },
     render: () => null,
-  }), { global: { plugins: [router] } })
-  const result = wrapper.vm.getResult()
+  })
+  const wrapper = mount(RouterView, { slots: { default: () => h(consumer) }, global: { plugins: [router] } })
+  const result = wrapper.getComponent(consumer).vm.getResult()
   const settled = vi.fn()
   const waiting = Promise.resolve(result)
   waiting.then(settled, settled)
@@ -168,7 +169,7 @@ test('does not resume setup after the component unmounts', async () => {
   })
   const wrapper = mount(defineComponent({
     render: () => h(Suspense, null, {
-      default: () => h(view),
+      default: () => h(RouterView, null, { default: () => h(view) }),
       fallback: () => null,
     }),
   }), { global: { plugins: [router] } })
