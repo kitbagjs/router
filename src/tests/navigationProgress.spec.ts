@@ -234,7 +234,7 @@ describe('navigation progress', () => {
 
     const useRouterNavigation = createUseRouterNavigation(router.key)
     const routerNavigation = navigation.app.runWithContext(useRouterNavigation)
-    const prefetch = routerNavigation.create()
+    const prefetch = routerNavigation.createStore()
 
     const route = router.resolve('other')
     prefetch.compute(route, getComputations(route))

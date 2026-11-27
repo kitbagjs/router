@@ -2166,7 +2166,7 @@ test('a before hook redirect discards prefetched work for the original route', a
   await router.start()
   const useRouterNavigation = createUseRouterNavigation(router.key)
   const navigation = app.runWithContext(useRouterNavigation)
-  const prepared = navigation.create()
+  const prepared = navigation.createStore()
   const route = router.resolve('prefetched')
   prepared.compute(route, getComputations(route))
   const options: RouterPushOptionsInternal = { prefetch: prepared }
@@ -2202,7 +2202,7 @@ test('prefetched navigation actions win in completion order', async () => {
   await router.start()
   const useRouterNavigation = createUseRouterNavigation(router.key)
   const navigation = app.runWithContext(useRouterNavigation)
-  const prepared = navigation.create()
+  const prepared = navigation.createStore()
   const resolved = router.resolve('page')
   prepared.compute(resolved, getComputations(resolved))
 

@@ -20,7 +20,7 @@ test('encoding and decoding preserve the same key across server and client', asy
     .addLoader(() => {
       throw new Error('failed')
     }, { name: 'failed' }))
-  const store = createRouterNavigation().create()
+  const store = createRouterNavigation().createStore()
   store.compute(server, getComputations(server))
   const { values, failures } = encodePayloadValues(server, store.getEntries())
 
